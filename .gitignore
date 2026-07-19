@@ -1,0 +1,23 @@
+# hot_reload.py 的本地状态文件（记录上次扫描的 mtime）
+scripts/.hot_reload_state.json
+
+# sync.py 是个人同步工具（含个人路径配置），不上传
+sync.py
+
+# HANDOVER.md 含 token/邮箱/绝对路径等敏感信息，仅本地用，不上传
+HANDOVER.md
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db

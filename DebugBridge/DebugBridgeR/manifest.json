@@ -1,0 +1,17 @@
+{
+	"format_version": 2,
+	"header": {
+		"name": "DebugBridge",
+		"description": "资源包",
+		"uuid": "79fdda18-4d0f-4fcc-ac98-ab0602bbe17e",
+		"min_engine_version": [1, 18, 0],
+		"version": [0, 0, 1]
+	},
+	"modules": [
+		{
+			"type": "resources",
+			"uuid": "6c67dd48-be12-48f7-90ea-6eb16573254d",
+			"version": [0, 0, 1]
+		}
+	]
+}

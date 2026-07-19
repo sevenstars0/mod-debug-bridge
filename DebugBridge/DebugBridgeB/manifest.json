@@ -1,0 +1,17 @@
+{
+	"format_version": 2,
+	"header": {
+		"name": "DebugBridge",
+		"description": "行为包",
+		"uuid": "6bffc677-5729-4bd2-bf7f-4c5b2fbddd9d",
+		"min_engine_version": [1, 18, 0],
+		"version": [0, 0, 1]
+	},
+	"modules": [
+		{
+			"type": "data",
+			"uuid": "dfe6b5ad-88fd-491a-966e-bbc872e0cbee",
+			"version": [0, 0, 1]
+		}
+	]
+}
