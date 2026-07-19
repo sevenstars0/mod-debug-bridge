@@ -192,8 +192,10 @@ def _fetch_mod_baseline():
     """从 mod 端取启动时扫描的基线（mod 启动时扫一次磁盘）。
     用于首次调用时避免"先建基线再 reload"的两步流程。
     返回 {abs_path: mtime}，失败返回空 dict。
-    连续开关 socket 可能撞 TIME_WAIT（_discover_mod_roots 刚调过一次），
-    失败时退避重试。"""
+    紧接 _discover_mod_roots 的调用可能失败：ExecListener 同一时刻只接 1 个连接
+    （config.py 的 if self._cli: sock.close()），上次连接的 _cli 要等下一次 tick 的
+    _recv 返回空才清除；新连接若赶在清除前到达会被直接拒绝（10061/10054）。
+    退避重试是给 tick 留时间推进到 _close_cli，与 TIME_WAIT 无关。"""
     import ast, time
     for attempt in range(3):
         try:
@@ -270,7 +272,8 @@ def _find_changed_modules_multi(mods_roots):
 def _dbreload_one_side(exec_func, label, module_name, retries=2):
     """在一端调 dbreload，返回 (ok, info_str)。
     单个模块失败（包括 socket 断开、reload 触发崩溃）不应影响其他模块。
-    连接断开（socket 10054 等）会自动重试——可能是 TIME_WAIT 堆积或并发争用导致的偶发现象。"""
+    连接被拒（10061/10054）多数是上一调用的 _cli 尚未被 ExecListener 清除（见
+    _fetch_mod_baseline 注释），tick 推进后即恢复，故失败退避重试。"""
     # 用 repr 防模块名里的特殊字符
     code = "ok, msg = dbreload(%r)\nprint 'OK' if ok else 'FAIL', msg" % module_name
     import time
