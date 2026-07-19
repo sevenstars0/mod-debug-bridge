@@ -169,8 +169,6 @@ questions: [{
 }]
 ```
 
-.py 改动不受这条规则约束，调 `hot_reload` 工具或 `tools/hot_reload.py` 即可。
+.py 改动不受这条规则约束，调 `hot_reload` 工具即可。
 
-## DebugBridge mod 运行路径
-
-DebugBridge mod 部署到 MCStudio 工作目录后，实际运行时通过 NTFS 硬链接同步到游戏 `behavior_packs/<包名>/DebugBridge/` 下。具体路径取决于 MCStudio 工程配置。
+DebugBridge mod 实际运行路径：`C:/MCStudioDownload/work/<用户开发者邮箱>/Cpp/AddOn/<hash目录>/DebugBridgeB/DebugBridge/`
