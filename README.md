@@ -107,8 +107,6 @@ print r['stdout'] if r['success'] else r['stderr']
 python scripts/hot_reload.py
 ```
 
-DebugBridge 启动时已扫一次磁盘作为基线，所以改完 .py 第一次调用就能扫到改动并重载（无需"先建基线"的两步流程）。
-
 ---
 
 ## DebugBridge mod
@@ -247,8 +245,6 @@ MCStudio IDE "点击日志窗口"触发的热重载调的是 `common.utils.xupda
 ```bash
 # 重载所有自上次调用以来改动过的 .py（默认双端都重载）
 python scripts/hot_reload.py
-
-# DebugBridge 启动时已建立基线，改完 .py 直接调一次即可重载
 
 # 多个 mod 同时存在时，指定要操作的包
 python scripts/hot_reload.py --pkg 你的包名
