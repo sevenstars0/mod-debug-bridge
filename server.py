@@ -38,7 +38,7 @@ INDEX = json.loads((DATA_DIR / "api_index.json").read_text(encoding="utf-8"))
 LISTINGS = (DATA_DIR / "api_listings.txt").read_text(encoding="utf-8").splitlines()
 MC_IDS = (DATA_DIR / "mc_ids.txt").read_text(encoding="utf-8").splitlines()
 
-SEARCH_LIMIT = 50
+SEARCH_LIMIT = 20
 
 server = Server("mod-debug-bridge")
 
