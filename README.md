@@ -1,35 +1,28 @@
 # mod-debug-bridge
 
 [![Python 2.7](https://img.shields.io/badge/Python-2.7-3776AB?logo=python&logoColor=white)](https://www.python.org/downloads/release/python-2718/)
+[![MCP](https://img.shields.io/badge/MCP-enabled-6f42c1)](https://modelcontextprotocol.io/)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)](README.md)
 [![by 7stars七星](https://img.shields.io/badge/by-7stars%E4%B8%83%E6%98%9F-00AEEF)](https://space.bilibili.com/379515917)
 [![License](https://img.shields.io/github/license/sevenstars0/mod-debug-bridge)](LICENSE)
 
-> 让大模型在游戏内执行代码、捕获事件、热重载——极大提升模组开发与修 bug 效率。
+> 让你的大模型在游戏内执行代码、捕获事件、热重载——极大提升模组开发与修 bug 效率。
 
-Minecraft 基岩版（网易版）mod 开发调试工具包，分两层：
+Minecraft（网易基岩版）轻量级 Agent 模组调试工具，分两层：
 
-- **底层 mod（DebugBridge）**：游戏运行时通过 TCP 端口（客户端 14530 / 服务端 14531）执行任意 Python 代码。`clientApi`/`serverApi` 全可用，读运行时数据、验证 API 行为、排查 mod bug。
-- **MCP 服务器**：给 AI 客户端（ZCode / Claude / Cursor 等）用的工具层，封装了 DebugBridge 的连接、诊断、热重载，AI 直接调工具即可，无需写样板代码。
+- **调试 mod（DebugBridge）**：游戏运行时通过 TCP 端口执行任意 Python 代码。`clientApi`/`serverApi` 全可用，读运行时数据、验证 API 行为、排查 mod bug。
+- **MCP 服务器**：给 AI 客户端用的工具层，封装了 DebugBridge 的连接、诊断、热重载。
 
-## 能做什么
-
-| AI 工具 | 用途 |
+| MCP 工具 | 用途 |
 |---|---|
-| `execute_code` | 游戏内执行任意 Python 2 代码（clientApi/serverApi 全可用） |
-| `hot_reload` | 改完 mod 的 .py 后热重载，免重启游戏（修复了官方 xupdate 不重载模块级常量/数据的 bug） |
-| `listen_event` + `get_event_log` | 注册事件监听器，捕获引擎/mod 事件的 args（异步触发的关键调试模式） |
-| `get_api_detail` / `search_api` / `search_identifier` | 查 ModSDK 接口、事件、枚举、基岩版 ID（无需游戏运行） |
-
-## 前提
-
-1. **游戏已启动**（进程 `Minecraft.Windows.exe`）
-2. **DebugBridge mod 已部署**（端口 14530 / 14531 LISTENING）
-3. **使用开发测试进存档**（只开 MCStudio 不进存档，mod 不会初始化）
-
-调用失败时工具会返回精准诊断（游戏未启动 / mod 未加载 / 后台卡死），按文案提示用户即可。
+| `execute_code` | 游戏内执行代码（clientApi/serverApi 全可用） |
+| `hot_reload` | 改完代码后热重载（修复了官方 xupdate 不重载模块级常量/数据的 bug） |
+| `listen_event` + `get_event_log` | 监听并获取事件数据用于调试 |
+| `get_api_detail` / `search_api` / `search_identifier` | 查 ModSDK 接口、事件、枚举、基岩版 ID |
 
 ## 安装
+
+点击右上角 Code → Download ZIP，下载到本地。
 
 ### 1. 部署 DebugBridge mod
 
@@ -40,6 +33,8 @@ Minecraft 基岩版（网易版）mod 开发调试工具包，分两层：
 3. 使用开发测试进存档
 
 ### 2. 启动 MCP 服务器
+
+先安装 mcp 库：
 
 ```bash
 pip install mcp
@@ -58,35 +53,9 @@ pip install mcp
 }
 ```
 
-## 目录结构
+## 如何更新数据源
 
-```
-mod-debug-bridge/
-├── DebugBridge/                    DebugBridge mod（MCStudio 直接导入）
-│   ├── DebugBridgeB/               行为包根
-│   │   ├── manifest.json
-│   │   └── DebugBridge/            mod 源码（config.py / clientSystem.py / serverSystem.py / modMain.py）
-│   └── DebugBridgeR/               资源包根（占位）
-├── server.py                       MCP 服务器入口
-├── requirements.txt
-├── data/                           预编译索引（API/事件/枚举/MC ID）
-├── mcguide/                        官方教程文档镜像
-├── tools/
-│   ├── debug_bridge_client.py      DebugBridge 客户端（py2/py3 兼容）
-│   ├── hot_reload.py               热重载脚本（py2，被 hot_reload 工具 subprocess 调用）
-│   ├── build_index.py              重建 data/ 索引（数据源更新时用）
-│   ├── build_mc_ids.py             重建基岩版 ID 映射
-│   └── sync_mcguide.py             从 GitHub 同步官方教程
-├── README.md                       本文档
-├── SKILL.md                        ZCode skill 配置
-└── LICENSE
-```
-
-## 更新数据源
-
-### 更新 API/事件索引
-
-当 `interface.json` 或 `events.json` 有更新时（通常是网易 SDK 版本升级）：
+### 更新 ModAPI 文档
 
 ```bash
 python tools/build_index.py
@@ -128,7 +97,7 @@ python tools/build_mc_ids.py
 
 从 Minecraft Wiki 抓取并生成 `data/mc_ids.txt`。
 
-## 数据来源
+### 数据来源
 
 - `interface.json` / `events.json`：来自 `D:\netease-modsdk-wiki\docs`，由官方文档同步脚本生成
 - `mcguide/`：来自 [MCNeteaseDevs/netease-bedrock-wiki](https://github.com/MCNeteaseDevs/netease-bedrock-wiki) 的 mcguide 目录
@@ -138,6 +107,30 @@ python tools/build_mc_ids.py
 
 - AI 工具调用陷阱、调试技巧：见 [`SKILL.md`](SKILL.md)
 - DebugBridge mod 工作原理、热重载机制：见 [`DebugBridge/DebugBridgeB/DebugBridge/config.py`](DebugBridge/DebugBridgeB/DebugBridge/config.py) 文件头注释和 `dbreload` 函数注释
+
+## 目录结构
+
+```
+mod-debug-bridge/
+├── DebugBridge/                    DebugBridge mod（MCStudio 直接导入）
+│   ├── DebugBridgeB/               行为包根
+│   │   ├── manifest.json
+│   │   └── DebugBridge/            mod 源码（config.py / clientSystem.py / serverSystem.py / modMain.py）
+│   └── DebugBridgeR/               资源包根（占位）
+├── server.py                       MCP 服务器入口
+├── requirements.txt
+├── data/                           预编译索引（API/事件/枚举/MC ID）
+├── mcguide/                        官方教程文档镜像
+├── tools/
+│   ├── debug_bridge_client.py      DebugBridge 客户端（py2/py3 兼容）
+│   ├── hot_reload.py               热重载脚本（py2，被 hot_reload 工具 subprocess 调用）
+│   ├── build_index.py              重建 data/ 索引（数据源更新时用）
+│   ├── build_mc_ids.py             重建基岩版 ID 映射
+│   └── sync_mcguide.py             从 GitHub 同步官方教程
+├── README.md                       本文档
+├── SKILL.md                        ZCode skill 配置
+└── LICENSE
+```
 
 ## 协议
 
