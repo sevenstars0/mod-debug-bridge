@@ -16,6 +16,7 @@ hot_reload 通过 subprocess 调 py2 脚本（D:/mod-debug-bridge/scripts/hot_re
 """
 import asyncio
 import json
+import os
 import re
 import socket
 import subprocess
@@ -71,7 +72,7 @@ async def list_tools():
                 "properties": {
                     "pattern": {
                         "type": "string",
-                        "description": "正则表达式，如 GetPlayerPos、^Set.*Pos、死亡|击杀",
+                        "description": "正则表达式，如 ^Set.*Pos、设置实体.*位置",
                     },
                     "entry_type": {
                         "type": "string",
@@ -305,6 +306,10 @@ async def call_tool(name, arguments):
             return [TextContent(type="text", text="event_name 不能为空")]
         # mod 端在 __main__._db_event_state 维护单槽（namespace/systemName/eventName/side/queue/handler/instance）。
         # 每次调用：先 UnListen 上次的（如有），再注册新的并清空队列。
+        # 引擎事件（Minecraft/Engine）注册未定义事件时引擎只打日志不抛异常，ListenForEventServer
+        # 还返回 None，工具会误以为成功。注册后用 eventBus.GetEngineEventID 复查——合法事件返回
+        # int ID，未定义返回 None——拿不到 ID 就报错。客户端/服务端各自有独立事件表，
+        # 所以用对应端的 eventBus 检查。
         listen_code = '''
 import __main__
 from collections import deque
@@ -332,15 +337,35 @@ __main__._db_event_handler = _db_event_handler  # 防 GC
 
 if %r == "client":
     event.ListenForEventClient(%r, %r, %r, __main__, _db_event_handler)
+    from common.system.systemRegister import client as _sys
 else:
     event.ListenForEventServer(%r, %r, %r, __main__, _db_event_handler)
-print "OK listening"
-''' % (namespace, system_name, event_name, side, side, namespace, system_name, event_name, namespace, system_name, event_name)
+    from common.system.systemRegister import server as _sys
+
+# 复查：引擎事件必须在对应端的事件表里有 cppID，否则引擎层已判定为未定义事件
+if %r == "Minecraft" and %r == "Engine":
+    _eventID = %r + ":" + %r + ":" + %r
+    if _sys.eventBus.GetEngineEventID(_eventID) is None:
+        print "FAIL undefined engine event: " + _eventID
+    else:
+        print "OK listening"
+else:
+    print "OK listening"
+''' % (namespace, system_name, event_name, side,
+       side, namespace, system_name, event_name,
+       namespace, system_name, event_name,
+       namespace, system_name, namespace, system_name, event_name)
         success, payload, is_tool_error = _exec_with_retry(listen_code, side)
         if is_tool_error:
             return CallToolResult(content=[TextContent(type="text", text=payload)], isError=True)
         if success:
             text = payload.strip() or "执行成功，无输出"
+            # 引擎层面判定未定义事件——算工具错（不是代码错），AI 能立即纠正事件名。
+            # 注意 payload 可能以引擎 [INFO][Engine] 日志开头（listen 过程触发的 RegisterEngineHandler
+            # 日志也被 stdout 捕获），用 "FAIL undefined engine event" in text 判断而不是 startswith。
+            if "FAIL undefined engine event" in text:
+                return CallToolResult(content=[TextContent(type="text",
+                text="未定义的引擎事件：{}。事件名拼写错误、不存在，或该事件不在{}端".format(event_name, side))], isError=True)
             return [TextContent(type="text", text=text)]
         return [TextContent(type="text", text=payload[:4000])]
 
@@ -390,7 +415,29 @@ print "OK listening"
         try:
             # hot_reload.py 是 py2 脚本，Windows 下 print 中文走 MBCS(GBK)，不是 UTF-8。
             # py3 subprocess 默认 UTF-8 解码会抛 UnicodeDecodeError，显式指定 GBK。
-            r = subprocess.run(cmd, capture_output=True, text=True, encoding="gbk", timeout=120)
+            #
+            # 注意：不能用 subprocess.run(capture_output=True) 或 Popen(stdout=PIPE)。
+            # 本进程的 stdio 被 mcp.server.stdio_server 接管（asyncio），子进程继承
+            # stdout/stderr 句柄后 Popen.communicate 卡 30s（PIPE 读不到 EOF）。
+            # 改为输出重定向到临时文件，wait 完再读，绕开管道通信。0.08s 正常返回。
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as _out_f, \
+                 tempfile.NamedTemporaryFile(mode='w+b', delete=False) as _err_f:
+                _out_path, _err_path = _out_f.name, _err_f.name
+            with open(_out_path, 'w') as _o, open(_err_path, 'w') as _e:
+                _proc = subprocess.Popen(cmd, stdout=_o, stderr=_e, stdin=subprocess.DEVNULL)
+                _proc.wait()
+            with open(_out_path, 'rb') as _f:
+                _out = _f.read().decode('gbk', 'replace')
+            with open(_err_path, 'rb') as _f:
+                _err = _f.read().decode('gbk', 'replace')
+            for _p in (_out_path, _err_path):
+                try:
+                    os.remove(_p)
+                except OSError:
+                    pass
+            r = subprocess.CompletedProcess(args=cmd, returncode=_proc.returncode,
+                                            stdout=_out, stderr=_err)
         except subprocess.TimeoutExpired:
             return CallToolResult(
                 content=[TextContent(type="text", text="hot_reload 执行超时（>120s）")],
