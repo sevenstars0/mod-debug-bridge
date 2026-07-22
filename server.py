@@ -47,13 +47,13 @@ async def list_tools():
     return [
         Tool(
             name="get_api_detail",
-            description="按名称查询 ModSDK 接口/事件/枚举值的完整签名（参数、返回值、备注、示例）。同名多个结果全部返回。",
+            description="按名称查询ModSDK接口/事件/枚举值的完整签名（参数、返回值、备注、示例）。同名多个结果全部返回。",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "name": {
                         "type": "string",
-                        "description": "接口/事件/枚举值的精确名称，如 SpawnItemToPlayerInv、MobDieEvent、AttrType",
+                        "description": "接口/事件/枚举值的精确名称，如SpawnItemToPlayerInv、MobDieEvent、AttrType",
                     },
                     "side": {
                         "type": "string",
@@ -66,13 +66,13 @@ async def list_tools():
         ),
         Tool(
             name="search_api",
-            description="搜索 ModSDK 接口/事件/枚举值名称。每行格式：名称<TAB>类型<TAB>端侧<TAB>描述。返回匹配行，用于查找名称后用 get_api_detail 查详情。",
+            description="搜索ModSDK接口/事件/枚举值名称。每行格式：名称<TAB>类型<TAB>端侧<TAB>描述。返回匹配行，用于查找名称后用get_api_detail查详情。",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "pattern": {
                         "type": "string",
-                        "description": "正则表达式，如 ^Set.*Pos、设置实体.*位置",
+                        "description": "正则表达式，如^Set.*Pos、设置实体.*位置",
                     },
                     "entry_type": {
                         "type": "string",
@@ -91,7 +91,7 @@ async def list_tools():
                 "properties": {
                     "pattern": {
                         "type": "string",
-                        "description": "正则表达式，如 golden_apple、^.*_axe、苹果、剑|斧",
+                        "description": "正则表达式，如golden_apple、^.*_axe、苹果、剑|斧",
                     },
                     "entry_type": {
                         "type": "string",
@@ -104,13 +104,13 @@ async def list_tools():
         ),
         Tool(
             name="execute_code",
-            description="在游戏内执行 Python 2 代码。",
+            description="在游戏内执行Python2代码。",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "code": {
                         "type": "string",
-                        "description": "代码，支持换行，不要手动用 `\n` 拼接",
+                        "description": "代码，支持换行，不要手动用\n拼接",
                     },
                     "side": {
                         "type": "string",
@@ -123,13 +123,13 @@ async def list_tools():
         ),
         Tool(
             name="listen_event",
-            description="在游戏内注册事件监听器，捕获引擎/mod 事件的 args，事件触发后用 get_event_log 读取。",
+            description="在游戏内注册事件监听器，捕获引擎或模组自定义事件的args，事件触发后用get_event_log读取。",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "event_name": {
                         "type": "string",
-                        "description": "事件名，如 DestroyBlockEvent",
+                        "description": "事件名，如DestroyBlockEvent",
                     },
                     "side": {
                         "type": "string",
@@ -143,7 +143,7 @@ async def list_tools():
                     },
                     "system_name": {
                         "type": "string",
-                        "description": "事件 system 名，监听模组自定义事件才需要改",
+                        "description": "事件system名，监听模组自定义事件才需要改",
                         "default": "Engine",
                     },
                 },
@@ -152,29 +152,29 @@ async def list_tools():
         ),
         Tool(
             name="get_event_log",
-            description="读取 listen_event 注册的事件监听器捕获到的 args 列表，无事件触发时返回空字符串。",
+            description="读取listen_event注册的事件监听器捕获到的args列表，无事件触发时返回空字符串。",
             inputSchema={"type": "object", "properties": {}, "required": []},
         ),
         Tool(
             name="hot_reload",
-            description="改完 mod 的 .py 文件后热重载，免重启游戏。",
+            description="改完mod的.py文件后热重载，免重启游戏。",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "side": {
                         "type": "string",
                         "enum": ["both", "client", "server"],
-                        "description": "重载端：both（默认，双端都重载）/ client / server。",
+                        "description": "重载端：both（默认，双端都重载）/client/server",
                         "default": "both",
                     },
                     "pkg": {
                         "type": "string",
-                        "description": "多个 mod 同时存在时指定包名（可选）。",
+                        "description": "多个mod同时存在时指定包名（可选）",
                     },
                     "modules": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "指定模块名列表（如 [\"chainScripts.chainServerSystem\"]），不传则自动扫改动。",
+                        "description": "指定模块名列表（如[\"chainScripts.chainServerSystem\"]），不传则自动扫改动",
                     },
                 },
                 "required": [],
@@ -196,14 +196,14 @@ def _search(arguments, lines):
         and (not entry_type or line.split("\t")[1] == entry_type)
     ]
     if not matched:
-        return [TextContent(type="text", text="未找到匹配 '{}' 的条目。".format(pattern))]
+        return [TextContent(type="text", text="未找到匹配'{}'的条目。".format(pattern))]
     # 带 entry_type 时去掉类型列（第 2 列），保留其余列
     if entry_type:
         matched = ["\t".join(p for i, p in enumerate(line.split("\t")) if i != 1) for line in matched]
     truncated = len(matched) > SEARCH_LIMIT
     result = "\n".join(matched[:SEARCH_LIMIT])
     if truncated:
-        result += "\n\n...（共 {} 条匹配，仅显示前 {} 条，请用更精确的正则缩小范围）".format(
+        result += "\n\n...（共{}条匹配，仅显示前{}条，请用更精确的正则缩小范围）".format(
             len(matched), SEARCH_LIMIT)
     return [TextContent(type="text", text=result)]
 
@@ -259,7 +259,7 @@ def _diagnose_connection_failure(port):
         return "调试工具未加载，请让用户装载调试工具mod后再进行开发测试"
 
     # 3. 端口在监听但 socket 连不上 → 多数是游戏后台/最小化导致 tick 暂停
-    return "连接超时，可能游戏处于后台，tick 暂停导致 socket 卡死，请把游戏窗口切回前台再试"
+    return "连接超时，可能游戏处于后台，tick暂停导致socket卡死，请把游戏窗口切回前台再试"
 
 @server.call_tool()
 async def call_tool(name, arguments):
@@ -268,8 +268,8 @@ async def call_tool(name, arguments):
         side = arguments.get("side", "")
         entries = INDEX.get(api_name)
         if not entries:
-            output = "未找到名为 `{}` 的API或事件。请检查名称拼写。\n".format(api_name)
-            output += "提示：可通过 search_api 正则搜索索引来查找名称。"
+            output = "未找到名为`{}`的API或事件。请检查名称拼写。\n".format(api_name)
+            output += "提示：可通过search_api正则搜索索引来查找名称。"
         elif side:
             # 按 ### 分段，保留 header 含 (side) 的段；无匹配则忽略 side 返回全部
             parts = re.split(r"(?=^### )", entries[0], flags=re.MULTILINE)
@@ -391,7 +391,7 @@ else:
             if text == "NOT_REGISTERED":
                 continue
             return [TextContent(type="text", text=text if text else "(no events captured yet)")]
-        return [TextContent(type="text", text="未注册任何事件监听器，请先调用 listen_event")]
+        return [TextContent(type="text", text="未注册任何事件监听器，请先调用listen_event")]
 
     elif name == "hot_reload":
         side = arguments.get("side", "both")
@@ -401,7 +401,7 @@ else:
         script = BASE_DIR / "tools" / "hot_reload.py"
         if not script.is_file():
             return CallToolResult(
-                content=[TextContent(type="text", text="hot_reload.py 脚本未找到：{}".format(script))],
+                content=[TextContent(type="text", text="hot_reload.py脚本未找到：{}".format(script))],
                 isError=True,
             )
         cmd = [r"C:\Python27\python.exe", "-B", str(script)]
@@ -440,18 +440,18 @@ else:
                                             stdout=_out, stderr=_err)
         except subprocess.TimeoutExpired:
             return CallToolResult(
-                content=[TextContent(type="text", text="hot_reload 执行超时（>120s）")],
+                content=[TextContent(type="text", text="hot_reload执行超时（>120s）")],
                 isError=True,
             )
         except Exception as e:
             return CallToolResult(
-                content=[TextContent(type="text", text="hot_reload 执行失败：{}".format(e))],
+                content=[TextContent(type="text", text="hot_reload执行失败：{}".format(e))],
                 isError=True,
             )
         # 脚本退出码非 0（有 failure）不算工具错——跟 execute_code 语义一致
         text = r.stdout or ""
         if r.stderr:
-            text = (text + "\n--- stderr ---\n" + r.stderr) if text else r.stderr
+            text = (text + "\n---stderr---\n" + r.stderr) if text else r.stderr
         return [TextContent(type="text", text=text.strip() or "执行成功，无输出")]
 
     return [TextContent(type="text", text="未知工具：{}".format(name))]

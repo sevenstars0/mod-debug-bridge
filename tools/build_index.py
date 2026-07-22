@@ -5,16 +5,34 @@
 把原 docs_reader + server 的解析与格式化逻辑在构建时跑完，
 输出 api_index.json（按名查全量文本）和 api_listings.txt（grep 式搜索）。
 
+数据来源（二选一）：
+  - 默认：从 GitHub（MCNeteaseDevs/modsdk_mcp_server）下载 docs/ 下的 .json/.md 到临时目录，解析后删除
+  - --source：指定本地 docs 父目录（兼容旧用法）
+
 用法：
-    python build_index.py [--source D:\\netease-modsdk-wiki] [--output ..\\data]
+    python build_index.py [--source D:\\netease-modsdk-wiki] [--output ..\\data] [--no-proxy]
 """
 import argparse
 import json
+import os
 import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.request
 from pathlib import Path
 
 DEFAULT_SOURCE = r"D:\netease-modsdk-wiki"
 DEFAULT_OUTPUT = str(Path(__file__).resolve().parent.parent / "data")
+
+# GitHub 下载配置
+REPO_OWNER = "MCNeteaseDevs"
+REPO_NAME = "modsdk_mcp_server"
+BRANCH = "main"
+PROXY_URL = "http://127.0.0.1:7890"
+BATCH_SIZE = 50
 
 
 # ============================================================
@@ -369,22 +387,232 @@ def format_enum_entry(enum_name, entries):
 
 
 # ============================================================
+# GitHub 下载层（复刻 sync_mcguide.py，REPO 换成 modsdk_mcp_server）
+# ============================================================
+
+def get_token():
+    """从 git credential 读取 GitHub token。"""
+    try:
+        result = subprocess.run(
+            ["git", "credential", "fill"],
+            input="protocol=https\nhost=github.com\n\n",
+            capture_output=True, text=True, timeout=10,
+        )
+        for line in result.stdout.splitlines():
+            if line.startswith("password="):
+                return line[len("password="):]
+    except Exception:
+        pass
+    return None
+
+
+def make_opener(use_proxy):
+    if not use_proxy:
+        return urllib.request.build_opener()
+    handler = urllib.request.ProxyHandler({
+        "http": PROXY_URL,
+        "https": PROXY_URL,
+    })
+    return urllib.request.build_opener(handler)
+
+
+def get_tree(opener, token):
+    """用 git trees API 递归获取完整文件树，返回 tree item 列表。"""
+    req = urllib.request.Request(
+        "https://api.github.com/repos/{}/{}/commits/{}".format(REPO_OWNER, REPO_NAME, BRANCH),
+        headers={"User-Agent": "modsdk-index-build", "Authorization": "token " + token},
+    )
+    resp = opener.open(req, timeout=30)
+    sha = json.load(resp)["sha"]
+    print("分支 {} 最新 commit: {}".format(BRANCH, sha[:12]))
+
+    req = urllib.request.Request(
+        "https://api.github.com/repos/{}/{}/git/trees/{}?recursive=1".format(
+            REPO_OWNER, REPO_NAME, sha),
+        headers={"User-Agent": "modsdk-index-build", "Authorization": "token " + token},
+    )
+    resp = opener.open(req, timeout=30)
+    data = json.load(resp)
+    if data.get("truncated"):
+        print("警告：文件树被截断，结果可能不完整！")
+    return data.get("tree", [])
+
+
+def fetch_batch(opener, token, paths, retries=3):
+    """通过 GraphQL 批量获取文件内容，返回 {path: text}。"""
+    aliases = []
+    for i, p in enumerate(paths):
+        escaped = p.replace('\\', '\\\\').replace('"', '\\"')
+        aliases.append(
+            'f{}: object(expression: "{}:{}") {{ ... on Blob {{ text }} }}'.format(i, BRANCH, escaped))
+    query = '{{ repository(owner: "{}", name: "{}") {{ {} }} }}'.format(
+        REPO_OWNER, REPO_NAME, " ".join(aliases))
+    payload = json.dumps({"query": query}).encode("utf-8")
+
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(
+                "https://api.github.com/graphql",
+                data=payload,
+                headers={
+                    "Authorization": "bearer " + token,
+                    "Content-Type": "application/json",
+                    "User-Agent": "modsdk-index-build",
+                },
+            )
+            resp = opener.open(req, timeout=60)
+            result = json.load(resp)
+            if "errors" in result:
+                raise Exception(result["errors"][0].get("message", "")[:200])
+            repo = result["data"]["repository"]
+            out = {}
+            for i, p in enumerate(paths):
+                obj = repo["f{}".format(i)]
+                if obj:
+                    out[p] = obj["text"]
+            return out
+        except Exception:
+            if attempt == retries - 1:
+                raise
+            time.sleep(3)
+    return {}
+
+
+def fetch_via_jsdelivr(opener, path):
+    """通过 jsdelivr CDN 下载单个文件（大文件 GraphQL 会截断）。返回文本或 None。"""
+    import urllib.parse
+    encoded = urllib.parse.quote(path, safe="/@")
+    url = "https://cdn.jsdelivr.net/gh/{}@{}/{}".format(
+        "{}/{}".format(REPO_OWNER, REPO_NAME), BRANCH, encoded)
+    req = urllib.request.Request(url, headers={"User-Agent": "modsdk-index-build"})
+    resp = opener.open(req, timeout=60)
+    return resp.read().decode("utf-8")
+
+
+def download_docs_from_github(dest_root, use_proxy=True):
+    """从 GitHub 下载 docs/ 下的 .json/.md 到 dest_root（保留 docs/ 层级）。
+
+    .json 用 jsdelivr CDN 下载（GraphQL 对大文件有截断）；
+    .md 用 GraphQL API 批量下载（小文件，效率高）。
+
+    返回 dest_root / "docs" 的 Path。
+    """
+    token = get_token()
+    if not token:
+        print("错误：无法从 git credential 获取 GitHub token")
+        sys.exit(1)
+    print("已获取 GitHub token")
+
+    opener = make_opener(use_proxy)
+    print("代理: {}".format("启用 " + PROXY_URL if use_proxy else "禁用"))
+
+    print("\n=== 获取文件树 ===")
+    tree = get_tree(opener, token)
+    json_paths = [
+        item["path"] for item in tree
+        if item["type"] == "blob"
+        and item["path"].startswith("docs/")
+        and item["path"].endswith(".json")
+    ]
+    md_paths = [
+        item["path"] for item in tree
+        if item["type"] == "blob"
+        and item["path"].startswith("docs/")
+        and item["path"].endswith(".md")
+    ]
+    print("docs/ 下共 {} 个 .json + {} 个 .md".format(len(json_paths), len(md_paths)))
+
+    docs_dir = Path(dest_root) / "docs"
+    docs_dir.mkdir(parents=True, exist_ok=True)
+
+    def save_file(path, text):
+        local = docs_dir / Path(path).relative_to("docs")
+        local.parent.mkdir(parents=True, exist_ok=True)
+        local.write_text(text, encoding="utf-8")
+
+    ok_count = 0
+    fail_count = 0
+    failed = []
+
+    # JSON 文件：jsdelivr CDN（避免 GraphQL 截断）
+    print("\n=== 下载 JSON（jsdelivr CDN）===")
+    for path in json_paths:
+        try:
+            text = fetch_via_jsdelivr(opener, path)
+            save_file(path, text)
+            ok_count += 1
+            print("  {} ({} KB)".format(path, len(text) // 1024))
+        except Exception as e:
+            failed.append(path)
+            fail_count += 1
+            print("  {} 失败: {}".format(path, e))
+
+    # MD 文件：GraphQL 批量
+    print("\n=== 下载 MD（GraphQL，每批 {}） ===".format(BATCH_SIZE))
+    total_batches = (len(md_paths) + BATCH_SIZE - 1) // BATCH_SIZE
+    for start in range(0, len(md_paths), BATCH_SIZE):
+        batch = md_paths[start:start + BATCH_SIZE]
+        batch_num = start // BATCH_SIZE + 1
+        try:
+            results = fetch_batch(opener, token, batch)
+        except Exception as e:
+            print("批次 {}/{} 失败: {}".format(batch_num, total_batches, e))
+            failed.extend(batch)
+            fail_count += len(batch)
+            continue
+        for path in batch:
+            text = results.get(path)
+            if text is None:
+                failed.append(path)
+                fail_count += 1
+                continue
+            save_file(path, text)
+            ok_count += 1
+        print("批次 {}/{}: {}/{} ok".format(batch_num, total_batches, len(results), len(batch)))
+
+    print("\n下载完成：成功 {}，失败 {}".format(ok_count, fail_count))
+    if failed:
+        print("失败文件（前 10 个）:")
+        for p in failed[:10]:
+            print("  " + p)
+    return docs_dir
+
+
+# ============================================================
 # 主流程
 # ============================================================
 
 def main():
     parser = argparse.ArgumentParser(description="预编译 ModSDK 索引")
-    parser.add_argument("--source", default=DEFAULT_SOURCE,
-                        help="输入根目录（默认 {}）".format(DEFAULT_SOURCE))
+    parser.add_argument("--source",
+                        help="本地 docs 父目录（如 D:\\netease-modsdk-wiki）；不传则从 GitHub 下载")
     parser.add_argument("--output", default=DEFAULT_OUTPUT,
                         help="输出目录（默认 {}）".format(DEFAULT_OUTPUT))
+    parser.add_argument("--no-proxy", action="store_true", help="从 GitHub 下载时不走代理")
     args = parser.parse_args()
 
-    docs_path = Path(args.source) / "docs"
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("加载 Markdown 文档 ...")
+    # 数据源：--source 走本地，否则从 GitHub 下载到临时目录
+    temp_root = None
+    if args.source:
+        docs_path = Path(args.source) / "docs"
+        if not docs_path.exists():
+            print("错误：docs 目录不存在：{}".format(docs_path))
+            sys.exit(1)
+        print("数据源（本地）：{}".format(docs_path))
+    else:
+        temp_root = tempfile.mkdtemp(prefix="modsdk_docs_")
+        print("数据源（GitHub {}）：临时目录 {}".format(REPO_NAME, temp_root))
+        try:
+            docs_path = download_docs_from_github(temp_root, use_proxy=not args.no_proxy)
+        except Exception as e:
+            print("GitHub 下载失败：{}".format(e))
+            shutil.rmtree(temp_root, ignore_errors=True)
+            sys.exit(1)
+
+    print("\n加载 Markdown 文档 ...")
     documents = load_markdown_docs(docs_path)
     print("  {} 个文档".format(len(documents)))
 
@@ -432,6 +660,11 @@ def main():
     listings_path.write_text("\n".join(listings), encoding="utf-8")
     print("写出 {} ({} KB, {} 行)".format(
         listings_path, listings_path.stat().st_size // 1024, len(listings)))
+
+    # 清理临时下载目录
+    if temp_root:
+        shutil.rmtree(temp_root, ignore_errors=True)
+        print("已清理临时目录")
 
     print("完成。")
 

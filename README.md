@@ -61,12 +61,13 @@ pip install mcp
 python tools/build_index.py
 ```
 
-默认从 `D:\netease-modsdk-wiki\docs` 读取数据，输出到 `data/`。
-可用 `--source` 指定其他数据源路径：
+从 GitHub（[MCNeteaseDevs/modsdk_mcp_server](https://github.com/MCNeteaseDevs/modsdk_mcp_server)）下载 `docs/` 下的 `interface.json`、`events.json` 和所有 `.md` 文档到临时目录，解析后自动删除，输出到 `data/`。
 
-```bash
-python tools/build_index.py --source D:\other\path
-```
+默认走代理 `http://127.0.0.1:7890`，从 `git credential` 读取 GitHub token。可用 `--no-proxy` 禁用代理。
+
+下载策略：
+- `.json`（含 1.8MB 的 interface.json）→ jsdelivr CDN（避免 GraphQL 大文件截断）
+- `.md`（192 个小文件）→ GraphQL API 批量下载（每批 50）
 
 脚本会：
 1. 解析 `interface.json`（1640 个 API）和 `events.json`（292 个事件）
@@ -99,7 +100,7 @@ python tools/build_mc_ids.py
 
 ### 数据来源
 
-- `interface.json` / `events.json`：来自 `D:\netease-modsdk-wiki\docs`，由官方文档同步脚本生成
+- `interface.json` / `events.json` / 接口事件文档：来自 [MCNeteaseDevs/modsdk_mcp_server](https://github.com/MCNeteaseDevs/modsdk_mcp_server) 的 `docs/` 目录
 - `mcguide/`：来自 [MCNeteaseDevs/netease-bedrock-wiki](https://github.com/MCNeteaseDevs/netease-bedrock-wiki) 的 mcguide 目录
 - `mc_ids.txt`：来自 Minecraft Wiki
 
