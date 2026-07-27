@@ -1,6 +1,9 @@
 # hot_reload.py 的本地状态文件（记录上次扫描的 mtime）
 tools/.hot_reload_state.json
 
+# server.py 单实例锁文件（运行时生成）
+server.pid
+
 # sync.py 是个人同步工具（含个人路径配置），不上传
 sync.py
 
