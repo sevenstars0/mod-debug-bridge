@@ -6,12 +6,12 @@
 [![by 7stars七星](https://img.shields.io/badge/by-7stars%E4%B8%83%E6%98%9F-00AEEF)](https://space.bilibili.com/379515917)
 [![License](https://img.shields.io/github/license/sevenstars0/mod-debug-bridge)](LICENSE)
 
-> 让你的大模型在游戏内执行代码、捕获事件、热重载——极大提升模组开发与修 bug 效率。
+> 让你的大模型在游戏内执行代码、监听事件、热重载、查文档——极大提升模组开发与修 bug 效率。
 
 Minecraft（网易基岩版）轻量级 Agent 模组调试工具，分两层：
 
-- **调试 mod（DebugBridge）**：游戏运行时通过 TCP 端口执行任意 Python 代码。`clientApi`/`serverApi` 全可用，读运行时数据、验证 API 行为、排查 mod bug。
-- **MCP 服务器**：给 AI 客户端用的工具层，封装了 DebugBridge 的连接、诊断、热重载。
+- **调试 mod（DebugBridge）**：游戏运行时通过 TCP 端口执行任意 Python 代码。`clientApi`/`serverApi` 全可用。
+- **MCP 服务器**：给 AI 客户端用的工具层，封装了代码执行、热重载、事件监听、文档查询等功能。
 
 | MCP 工具 | 用途 |
 |---|---|
