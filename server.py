@@ -21,6 +21,7 @@ import re
 import socket
 import subprocess
 import sys
+import textwrap
 from pathlib import Path
 
 from mcp.server import Server
@@ -123,7 +124,7 @@ async def list_tools():
         ),
         Tool(
             name="listen_event",
-            description="在游戏内注册事件监听器，捕获引擎或模组自定义事件的args，事件触发后用get_event_log读取。",
+            description="在游戏内注册事件监听器，捕获引擎或模组自定义事件的args。可通过callback_code自定义回调代码段（访问args调API打印更多数据），事件触发后用get_event_log读取。",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -145,6 +146,10 @@ async def list_tools():
                         "type": "string",
                         "description": "事件system名，监听模组自定义事件才需要改",
                         "default": "Engine",
+                    },
+                    "callback_code": {
+                        "type": "string",
+                        "description": "事件回调代码段，可访问args（事件参数dict），用print输出额外数据（如根据args['entityId']调API查位置）。输出通过get_event_log查看。默认print args",
                     },
                 },
                 "required": ["event_name", "side"],
@@ -261,6 +266,87 @@ def _diagnose_connection_failure(port):
     # 3. 端口在监听但 socket 连不上 → 多数是游戏后台/最小化导致 tick 暂停
     return "连接超时，可能游戏处于后台，tick暂停导致socket卡死，请把游戏窗口切回前台再试"
 
+
+def _build_listen_code(namespace, systemName, eventName, side, callback_code):
+    """构造 mod 端注册事件监听器的代码。
+
+    两处关键设计：
+    1. 引擎日志隔离：RegisterEngineHandler 等日志走 Python stdout，会被 ExecListener
+       的 buf 捕获混入回传。注册期间临时把 sys.stdout 切回真实 stdout（sys.__stdout__），
+       让引擎日志进游戏日志而非 MCP 回传。
+    2. callback 捕获：handler 内部把 callback_code 的 print 重定向到 StringIO，
+       拼到 args 字符串后入队。get_event_log 一次拿到 args + callback 输出。
+    """
+    callback_body = textwrap.indent(callback_code, "        ")
+    return """\
+import __main__, sys, StringIO, codecs, traceback
+from collections import deque
+from common.eventUtil import instance as event
+
+prev = getattr(__main__, "_db_event_state", None)
+if prev is not None:
+    try:
+        if prev["side"] == "client":
+            event.UnListenForEventClient(prev["namespace"], prev["systemName"], prev["eventName"], prev["instance"], prev["handler"])
+        else:
+            event.UnListenForEventServer(prev["namespace"], prev["systemName"], prev["eventName"], prev["instance"], prev["handler"])
+    except Exception as e:
+        print "UnListen prev failed: " + str(e)
+
+state = {"namespace": %(namespace)r, "systemName": %(systemName)r, "eventName": %(eventName)r, "side": %(side)r, "queue": deque(maxlen=10), "handler": None, "instance": __main__}
+
+def _db_event_handler(args):
+    # 用 utf-8 writer 包装 StringIO：引擎事件分发同栈里 logging 会写 unicode 日志，
+    # 裸 StringIO 只收 str，写 unicode 会抛 IOError [Errno 0]。包装后自动编码成 utf-8。
+    _buf = codecs.getwriter('utf-8')(StringIO.StringIO())
+    _old = sys.stdout
+    sys.stdout = _buf
+    try:
+%(callback_body)s
+    except Exception:
+        print traceback.format_exc()
+    finally:
+        sys.stdout = _old
+    _extra = _buf.getvalue().rstrip()
+    _entry = str(args) + ("\\n" + _extra if _extra else "")
+    state["queue"].append(_entry)
+
+state["handler"] = _db_event_handler
+__main__._db_event_state = state
+__main__._db_event_handler = _db_event_handler  # 防 GC
+
+# 注册期间把 stdout 切回真实 stdout：RegisterEngineHandler 等引擎日志走 Python stdout，
+# 否则会污染本次 exec 的回传 buf。注册后立即恢复。
+_outer_stdout = sys.stdout
+sys.stdout = sys.__stdout__ if sys.__stdout__ else _outer_stdout
+try:
+    if %(side)r == "client":
+        event.ListenForEventClient(%(namespace)r, %(systemName)r, %(eventName)r, __main__, _db_event_handler)
+        from common.system.systemRegister import client as _sys
+    else:
+        event.ListenForEventServer(%(namespace)r, %(systemName)r, %(eventName)r, __main__, _db_event_handler)
+        from common.system.systemRegister import server as _sys
+finally:
+    sys.stdout = _outer_stdout
+
+# 复查：引擎事件必须在对应端的事件表里有 cppID，否则引擎层已判定为未定义事件
+if %(namespace)r == "Minecraft" and %(systemName)r == "Engine":
+    _eventID = %(namespace)r + ":" + %(systemName)r + ":" + %(eventName)r
+    if _sys.eventBus.GetEngineEventID(_eventID) is None:
+        print "FAIL undefined engine event: " + _eventID
+    else:
+        print "OK listening"
+else:
+    print "OK listening"
+""" % {
+        "namespace": namespace,
+        "systemName": systemName,
+        "eventName": eventName,
+        "side": side,
+        "callback_body": callback_body,
+    }
+
+
 @server.call_tool()
 async def call_tool(name, arguments):
     if name == "get_api_detail":
@@ -302,67 +388,16 @@ async def call_tool(name, arguments):
         side = arguments.get("side", "server")
         namespace = arguments.get("namespace") or "Minecraft"
         system_name = arguments.get("system_name") or "Engine"
+        callback_code = arguments.get("callback_code") or "print args"
         if not event_name:
             return [TextContent(type="text", text="event_name 不能为空")]
-        # mod 端在 __main__._db_event_state 维护单槽（namespace/systemName/eventName/side/queue/handler/instance）。
-        # 每次调用：先 UnListen 上次的（如有），再注册新的并清空队列。
-        # 引擎事件（Minecraft/Engine）注册未定义事件时引擎只打日志不抛异常，ListenForEventServer
-        # 还返回 None，工具会误以为成功。注册后用 eventBus.GetEngineEventID 复查——合法事件返回
-        # int ID，未定义返回 None——拿不到 ID 就报错。客户端/服务端各自有独立事件表，
-        # 所以用对应端的 eventBus 检查。
-        listen_code = '''
-import __main__
-from collections import deque
-from common.eventUtil import instance as event
-
-prev = getattr(__main__, "_db_event_state", None)
-if prev is not None:
-    try:
-        if prev["side"] == "client":
-            event.UnListenForEventClient(prev["namespace"], prev["systemName"], prev["eventName"], prev["instance"], prev["handler"])
-        else:
-            event.UnListenForEventServer(prev["namespace"], prev["systemName"], prev["eventName"], prev["instance"], prev["handler"])
-    except Exception as e:
-        print "UnListen prev failed: " + str(e)
-
-state = {"namespace": %r, "systemName": %r, "eventName": %r, "side": %r, "queue": deque(maxlen=10), "handler": None, "instance": __main__}
-
-def _db_event_handler(*argv, **kwargs):
-    args = argv[0] if len(argv) == 1 else argv
-    state["queue"].append(str(args))
-
-state["handler"] = _db_event_handler
-__main__._db_event_state = state
-__main__._db_event_handler = _db_event_handler  # 防 GC
-
-if %r == "client":
-    event.ListenForEventClient(%r, %r, %r, __main__, _db_event_handler)
-    from common.system.systemRegister import client as _sys
-else:
-    event.ListenForEventServer(%r, %r, %r, __main__, _db_event_handler)
-    from common.system.systemRegister import server as _sys
-
-# 复查：引擎事件必须在对应端的事件表里有 cppID，否则引擎层已判定为未定义事件
-if %r == "Minecraft" and %r == "Engine":
-    _eventID = %r + ":" + %r + ":" + %r
-    if _sys.eventBus.GetEngineEventID(_eventID) is None:
-        print "FAIL undefined engine event: " + _eventID
-    else:
-        print "OK listening"
-else:
-    print "OK listening"
-''' % (namespace, system_name, event_name, side,
-       side, namespace, system_name, event_name,
-       namespace, system_name, event_name,
-       namespace, system_name, namespace, system_name, event_name)
+        listen_code = _build_listen_code(namespace, system_name, event_name, side, callback_code)
         success, payload, is_tool_error = _exec_with_retry(listen_code, side)
         if is_tool_error:
             return CallToolResult(content=[TextContent(type="text", text=payload)], isError=True)
         if success:
             text = payload.strip() or "执行成功，无输出"
             # 引擎层面判定未定义事件——算工具错（不是代码错），AI 能立即纠正事件名。
-            # 注意 payload 可能以引擎 [INFO][Engine] 日志开头（listen 过程触发的 RegisterEngineHandler
-            # 日志也被 stdout 捕获），用 "FAIL undefined engine event" in text 判断而不是 startswith。
             if "FAIL undefined engine event" in text:
                 return CallToolResult(content=[TextContent(type="text",
                 text="未定义的引擎事件：{}。事件名拼写错误、不存在，或该事件不在{}端".format(event_name, side))], isError=True)
@@ -397,6 +432,21 @@ else:
         side = arguments.get("side", "both")
         pkg = arguments.get("pkg")
         modules = arguments.get("modules") or []
+        # 前置检测：复用 execute_code 的端口探测，游戏未启动/工具未加载时直接返回相同提示
+        check_sides = ("client", "server") if side == "both" else (side,)
+        for check_side in check_sides:
+            port = db.CLIENT_PORT if check_side == "client" else db.SERVER_PORT
+            probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            probe.settimeout(1.0)
+            try:
+                probe.connect(("127.0.0.1", port))
+                probe.close()
+            except (socket.error, socket.timeout):
+                probe.close()
+                return CallToolResult(
+                    content=[TextContent(type="text", text=_diagnose_connection_failure(port))],
+                    isError=True,
+                )
         # hot_reload.py 跟 server.py 同项目，相对路径找
         script = BASE_DIR / "tools" / "hot_reload.py"
         if not script.is_file():
@@ -456,9 +506,70 @@ else:
 
     return [TextContent(type="text", text="未知工具：{}".format(name))]
 
+def _kill_stale_instance():
+    """单实例：杀掉上一个残留的 server.py 进程。
+
+    ZCode 重启 MCP 时只 spawn 新进程、不关旧 stdin，导致旧 server 残留。
+    本函数读 pid 锁文件，若上个进程还活着就 taskkill 干掉，再写自己的 pid。
+    """
+    import os
+    lock = BASE_DIR / "server.pid"
+    if lock.is_file():
+        try:
+            old_pid = int(lock.read_text(encoding="utf-8").strip())
+            if old_pid != os.getpid():
+                # 探测旧进程是否还活着
+                import ctypes
+                kernel32 = ctypes.windll.kernel32
+                handle = kernel32.OpenProcess(0x1000, False, old_pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+                if handle:
+                    exit_code = ctypes.c_ulong()
+                    kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code))
+                    kernel32.CloseHandle(handle)
+                    if exit_code.value == 259:  # STILL_ACTIVE
+                        subprocess.run(["taskkill", "/F", "/PID", str(old_pid)],
+                                       capture_output=True, timeout=5)
+        except Exception:
+            pass  # 锁文件损坏/进程已死，忽略
+    lock.write_text(str(os.getpid()), encoding="utf-8")
+
+
+async def _watch_parent_task():
+    """监控父进程（ZCode），父进程退出时主动终止本进程。
+
+    兜底 ZCode 异常退出不关闭 stdin 管道导致 server 进程残留的问题。
+    正常情况下 stdin 关闭会让 server.run() 自然返回，此任务不介入。
+    """
+    import os
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    parent_pid = os.getppid()
+    while True:
+        await asyncio.sleep(5)
+        try:
+            handle = kernel32.OpenProcess(0x1000, False, parent_pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+            if not handle:
+                break  # 父进程已退出
+            exit_code = ctypes.c_ulong()
+            kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code))
+            kernel32.CloseHandle(handle)
+            if exit_code.value != 259:  # STILL_ACTIVE
+                break
+        except Exception:
+            break  # 探测异常也退出，避免僵死
+    os._exit(1)
+
+
 async def main():
-    async with stdio_server() as (read_stream, write_stream):
-        await server.run(read_stream, write_stream, server.create_initialization_options())
+    # 杀掉上一个残留的 server（ZCode 重启 MCP 时不杀旧的）
+    _kill_stale_instance()
+    # 启动父进程监控任务（兜底 ZCode 整体退出但 stdin 未关闭的情况）
+    monitor_task = asyncio.create_task(_watch_parent_task())
+    try:
+        async with stdio_server() as (read_stream, write_stream):
+            await server.run(read_stream, write_stream, server.create_initialization_options())
+    finally:
+        monitor_task.cancel()
 
 if __name__ == "__main__":
     asyncio.run(main())
