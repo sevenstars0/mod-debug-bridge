@@ -6,7 +6,7 @@
   - search_api(pattern)：正则搜索 API/事件/枚举索引（grep 式）
   - search_identifier(pattern)：正则搜索基岩版方块/物品/实体/状态效果/附魔 ID
   - execute_code(code, side)：在游戏内 DebugBridge mod 执行 Python 代码（py2.7）
-  - listen_event(event_name, side, ...)：注册事件监听器，捕获 args 存队列
+  - listen_event(event_name, side, ...)：注册事件监听器，捕获 args 字典
   - get_event_log()：读取 listen_event 捕获的 args
   - hot_reload(side, pkg, modules)：改完 .py 后热重载，封装 hot_reload.py
 
@@ -124,7 +124,7 @@ async def list_tools():
         ),
         Tool(
             name="listen_event",
-            description="在游戏内注册事件监听器，捕获引擎或模组自定义事件的args。可通过callback_code自定义回调代码段（访问args调API打印更多数据），事件触发后用get_event_log读取。",
+            description="在游戏内注册事件监听器，捕获引擎或模组自定义事件的args字典，事件触发后用get_event_log读取。",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -149,7 +149,8 @@ async def list_tools():
                     },
                     "callback_code": {
                         "type": "string",
-                        "description": "事件回调代码段，可访问args（事件参数dict），用print输出额外数据（如根据args['entityId']调API查位置）。输出通过get_event_log查看。默认print args",
+                        "description": "事件回调代码段，可访问args，默认print args",
+                        "default": "print args",
                     },
                 },
                 "required": ["event_name", "side"],
@@ -405,7 +406,7 @@ async def call_tool(name, arguments):
         return [TextContent(type="text", text=payload[:4000])]
 
     elif name == "get_event_log":
-        # 读 __main__._db_event_state.queue，'\n'.join(map(str, args)) 返回。
+        # 读 __main__._db_event_state.queue（每条是 str(args)+callback输出），换行 join 返回。
         # 不知道当前 side，两端都试一遍——listen_event 注册的端会有 state，另一端会拿到 AttributeError。
         for side in ("server", "client"):
             success, payload, is_tool_error = _exec_with_retry(
