@@ -7,7 +7,7 @@
   - search_identifier(pattern)：正则搜索基岩版方块/物品/实体/状态效果/附魔 ID
   - execute_code(code, side)：在游戏内 DebugBridge mod 执行 Python 代码（py2.7）
   - listen_event(event_name, side, ...)：注册事件监听器，捕获 args 字典
-  - get_event_log()：读取 listen_event 捕获的 args
+  - get_event_log()：读取 listen_event 回调代码中 print 内容
   - hot_reload(side, pkg, modules)：改完 .py 后热重载，封装 hot_reload.py
 
 前三个工具仅依赖 data/ 下的预编译索引；execute_code/listen_event/get_event_log
@@ -276,7 +276,7 @@ def _build_listen_code(namespace, systemName, eventName, side, callback_code):
        的 buf 捕获混入回传。注册期间临时把 sys.stdout 切回真实 stdout（sys.__stdout__），
        让引擎日志进游戏日志而非 MCP 回传。
     2. callback 捕获：handler 内部把 callback_code 的 print 重定向到 StringIO，
-       拼到 args 字符串后入队。get_event_log 一次拿到 args + callback 输出。
+       直接入队（默认 print args → 每条即 args）。get_event_log 拿到 callback 输出。
     """
     callback_body = textwrap.indent(callback_code, "        ")
     return """\
@@ -309,8 +309,7 @@ def _db_event_handler(args):
     finally:
         sys.stdout = _old
     _extra = _buf.getvalue().rstrip()
-    _entry = str(args) + ("\\n" + _extra if _extra else "")
-    state["queue"].append(_entry)
+    state["queue"].append(_extra)
 
 state["handler"] = _db_event_handler
 __main__._db_event_state = state
@@ -406,7 +405,7 @@ async def call_tool(name, arguments):
         return [TextContent(type="text", text=payload[:4000])]
 
     elif name == "get_event_log":
-        # 读 __main__._db_event_state.queue（每条是 str(args)+callback输出），换行 join 返回。
+        # 读 __main__._db_event_state.queue（每条是 callback 的 print 输出），换行 join 返回。
         # 不知道当前 side，两端都试一遍——listen_event 注册的端会有 state，另一端会拿到 AttributeError。
         for side in ("server", "client"):
             success, payload, is_tool_error = _exec_with_retry(
