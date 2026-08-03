@@ -14,6 +14,7 @@
 """
 import json
 import re
+import time
 import urllib.parse
 import urllib.request
 from html import unescape
@@ -33,8 +34,8 @@ SUBPAGES = [
 MAIN_PAGE = "基岩版数据值"
 
 
-def fetch_page_html(page_title):
-    """通过 api.php?action=parse 获取页面解析后的 HTML。"""
+def fetch_page_html(page_title, retries=3):
+    """通过 api.php?action=parse 获取页面解析后的 HTML。网络不稳时自动重试。"""
     params = urllib.parse.urlencode({
         "action": "parse",
         "page": page_title,
@@ -43,13 +44,21 @@ def fetch_page_html(page_title):
         "disablelimitreport": 1,
     })
     url = API_URL + "?" + params
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        result = json.loads(resp.read().decode("utf-8"))
-    if "error" in result:
-        raise RuntimeError("API 错误（{}）：{}".format(
-            page_title, result["error"].get("info", result["error"])))
-    return result["parse"]["text"]["*"]
+    last_err = None
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                result = json.loads(resp.read().decode("utf-8"))
+            if "error" in result:
+                raise RuntimeError("API 错误（{}）：{}".format(
+                    page_title, result["error"].get("info", result["error"])))
+            return result["parse"]["text"]["*"]
+        except Exception as e:
+            last_err = e
+            print("  [retry {}/{}] {}".format(attempt + 1, retries, e))
+            time.sleep(2)
+    raise last_err
 
 
 def strip_tags(html):
@@ -105,8 +114,9 @@ def parse_enchant(html):
             continue
         name = extract_name(cells[0])
         ns_id = strip_tags(cells[1])
+        num_id = strip_tags(cells[2])
         if ns_id and name:
-            results.append((ns_id, name))
+            results.append((ns_id, name, num_id))
     return results
 
 
@@ -135,8 +145,8 @@ def main():
         lines.append("{}\t状态效果\t{}".format(ns_id, name))
 
     enchant_chunk = slice_section(main_html, "魔咒ID", "方块状态")
-    for ns_id, name in parse_enchant(enchant_chunk):
-        lines.append("{}\t附魔\t{}".format(ns_id, name))
+    for ns_id, name, num_id in parse_enchant(enchant_chunk):
+        lines.append("{}\t附魔\t{}\t{}".format(ns_id, name, num_id))
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text("\n".join(lines) + "\n", encoding="utf-8")

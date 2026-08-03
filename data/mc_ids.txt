@@ -2219,45 +2219,45 @@ oozing	状态效果	渗浆
 infested	状态效果	寄生
 raid_omen	状态效果	袭击之兆
 breath_of_the_nautilus	状态效果	鹦鹉螺之息
-protection	附魔	保护
-fire_protection	附魔	火焰保护
-feather_falling	附魔	摔落缓冲
-blast_protection	附魔	爆炸保护
-projectile_protection	附魔	弹射物保护
-thorns	附魔	荆棘
-respiration	附魔	水下呼吸
-depth_strider	附魔	深海探索者
-aqua_affinity	附魔	水下速掘
-sharpness	附魔	锋利
-smite	附魔	亡灵杀手
-bane_of_arthropods	附魔	节肢杀手
-knockback	附魔	击退
-fire_aspect	附魔	火焰附加
-looting	附魔	抢夺
-efficiency	附魔	效率
-silk_touch	附魔	精准采集
-unbreaking	附魔	耐久
-fortune	附魔	时运
-power	附魔	力量
-punch	附魔	冲击
-flame	附魔	火矢
-infinity	附魔	无限
-luck_of_the_sea	附魔	海之眷顾
-lure	附魔	饵钓
-frost_walker	附魔	冰霜行者
-mending	附魔	经验修补
-binding_curse	附魔	绑定诅咒
-vanishing_curse	附魔	消失诅咒
-impaling	附魔	穿刺
-riptide	附魔	激流
-loyalty	附魔	忠诚
-channeling	附魔	引雷
-multishot	附魔	多重射击
-piercing	附魔	穿透
-quick_charge	附魔	快速装填
-soul_speed	附魔	灵魂疾行
-swift_sneak	附魔	迅捷潜行
-wind_burst	附魔	风爆
-density	附魔	致密
-breach	附魔	破甲
-lunge	附魔	突进
+protection	附魔	保护	0
+fire_protection	附魔	火焰保护	1
+feather_falling	附魔	摔落缓冲	2
+blast_protection	附魔	爆炸保护	3
+projectile_protection	附魔	弹射物保护	4
+thorns	附魔	荆棘	5
+respiration	附魔	水下呼吸	6
+depth_strider	附魔	深海探索者	7
+aqua_affinity	附魔	水下速掘	8
+sharpness	附魔	锋利	9
+smite	附魔	亡灵杀手	10
+bane_of_arthropods	附魔	节肢杀手	11
+knockback	附魔	击退	12
+fire_aspect	附魔	火焰附加	13
+looting	附魔	抢夺	14
+efficiency	附魔	效率	15
+silk_touch	附魔	精准采集	16
+unbreaking	附魔	耐久	17
+fortune	附魔	时运	18
+power	附魔	力量	19
+punch	附魔	冲击	20
+flame	附魔	火矢	21
+infinity	附魔	无限	22
+luck_of_the_sea	附魔	海之眷顾	23
+lure	附魔	饵钓	24
+frost_walker	附魔	冰霜行者	25
+mending	附魔	经验修补	26
+binding_curse	附魔	绑定诅咒	27
+vanishing_curse	附魔	消失诅咒	28
+impaling	附魔	穿刺	29
+riptide	附魔	激流	30
+loyalty	附魔	忠诚	31
+channeling	附魔	引雷	32
+multishot	附魔	多重射击	33
+piercing	附魔	穿透	34
+quick_charge	附魔	快速装填	35
+soul_speed	附魔	灵魂疾行	36
+swift_sneak	附魔	迅捷潜行	37
+wind_burst	附魔	风爆	38
+density	附魔	致密	39
+breach	附魔	破甲	40
+lunge	附魔	突进	41
