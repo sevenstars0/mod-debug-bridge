@@ -24,3 +24,9 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# 本地数据源构建脚本（依赖本地环境，不上传）
+tools/build_index_private.py
+
+# 优化备份文件（本地对比用）
+*.bak

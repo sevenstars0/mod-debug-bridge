@@ -3,10 +3,15 @@ SetPerspective	接口	客户端	设置视角模式
 LockPerspective	接口	客户端	锁定玩家的视角模式
 GetUIProfile	接口	客户端	获取"UI 档案"模式
 SetUIProfile	接口	客户端	设置"UI 档案"模式
+SetToggleOption	接口	客户端	修改开关型设置的接口
 SetSplitControlCanChange	接口	客户端	设置是否允许使用准星瞄准按钮
 GetToggleOption	接口	客户端	获得某个开关设置值的接口
 HighlightBoxSelection	接口	客户端	镜头移动时高亮当前视角中心所指的方块
 GetControllerLayout	接口	客户端	获取玩家控制器绑定映射
+GetKeyMappings	接口	客户端	获取指定的自定义按键映射配置
+RegisterCustomKeyMapping	接口	客户端	注册自定义按键映射
+GetGamepadKeyMappings	接口	客户端	获取自定义手柄按键映射
+RegisterCustomGamepadMapping	接口	客户端	注册自定义手柄按键映射
 GetSliderOption	接口	客户端	获得某个滑动条设置选项的值
 SetSliderOption	接口	客户端	设置某个滑动条设置选项的值
 SetPlayerFovScale	接口	客户端	将渲染实际使用的fov变为设置中的fov乘以fovScale,fovScale越接近0，其效果越接近原版望远镜效果
@@ -42,6 +47,11 @@ GetTypeFamily	接口	服务端	获取生物行为包字段 type_family
 SetPersistent	接口	服务端	设置实体不会因为离玩家太远而被[清除](https://zh.minecraft.wiki/w/%E7%94%9F%E6%88%90#%E6%B8%85%E9%99%A4)
 ResetToDefaultValue	接口	服务端	重置实体引擎属性到默认值
 ResetToMaxValue	接口	服务端	重置实体引擎属性到最大值
+AddModifier	接口	服务端	为指定生物增加属性修饰符
+UpdateModifier	接口	服务端	为指定生物更新属性修饰符
+RemoveModifier	接口	服务端	为指定生物移除属性修饰符
+HasModifier	接口	服务端	获取指定生物是否含有属性修饰符
+GetAllModifiers	接口	服务端	获取指定生物的某属性所有属性修饰符
 SetMotion	接口	服务端	设置生物（不含玩家）的瞬时移动方向向量
 SetMotion	接口	客户端	设置瞬时的移动方向向量，用于本地玩家
 SetPlayerMotion	接口	服务端	设置玩家的瞬时移动方向向量(可解决SetMotion闪现问题)
@@ -69,81 +79,32 @@ GetBlockEntityData	接口	客户端	用于获取客户端当前维度中方块�
 GetBlockEntityData	接口	服务端	用于获取方块（包括自定义方块）的数据，如需修改，请使用setblockentitydata接口
 GetRot	接口	客户端	获取实体头与水平方向的俯仰角度和竖直方向的旋转角度，获得角度后可用GetDirFromRot接口转换为朝向的单位向量 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
 GetRot	接口	客户端	获取序列帧特效的旋转角度
-GetRot	接口	客户端	获取粒子发射器局部旋转
 GetRot	接口	服务端	获取实体头与水平方向的俯仰角度和竖直方向的旋转角度，获得角度后可用GetDirFromRot接口转换为朝向的单位向量 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
 GetRot	接口	客户端	获取粒子发射器的旋转角度
 SetRot	接口	客户端	设置实体头与水平方向的俯仰角度和竖直方向的旋转角度 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
 SetRot	接口	客户端	设置序列帧的旋转
-SetRot	接口	客户端	设置粒子发射器局部旋转
 SetRot	接口	服务端	设置实体头与水平方向的俯仰角度和竖直方向的旋转角度 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
+SetRotForClientEntity	接口	客户端	设置客户端实体头与水平方向的俯仰角度和竖直方向的旋转角度 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
 GetBodyRot	接口	客户端	获取实体的身体的角度
 LockLocalPlayerRot	接口	客户端	在分离摄像机时，锁定本地玩家的头部角度
 SetPlayerLookAtPos	接口	客户端	设置本地玩家看向某个位置
-SetPosition	接口	客户端	设置控件相对父节点的坐标
-SetFullSize	接口	客户端	设置控件的大小，支持比例形式以及绝对值
-GetFullSize	接口	客户端	获取控件的大小，支持百分比以及绝对值
-SetFullPosition	接口	客户端	设置控件的锚点坐标（全局坐标），支持比例值以及绝对值
-GetFullPosition	接口	客户端	获取控件的锚点坐标，支持比例值以及绝对值
-SetAnchorFrom	接口	客户端	设置控件相对于父节点的锚点
-GetAnchorFrom	接口	客户端	判断控件相对于父节点的哪个锚点来计算位置与大小
-SetAnchorTo	接口	客户端	设置控件自身锚点位置
-GetAnchorTo	接口	客户端	获取控件自身锚点位置信息
-SetClipOffset	接口	客户端	设置控件的裁剪偏移信息
-GetClipOffset	接口	客户端	获取控件的裁剪偏移信息
-SetClipsChildren	接口	客户端	设置控件是否开启裁剪内容
-GetClipsChildren	接口	客户端	根据控件路径返回某控件是否开启裁剪内容
-SetMaxSize	接口	客户端	设置控件所允许的最大的大小值
-GetMaxSize	接口	客户端	获取控件所允许的最大的大小值
-SetMinSize	接口	客户端	设置控件所允许的最小的大小值
-GetMinSize	接口	客户端	获取控件所允许的最小的大小值
-GetPosition	接口	客户端	获取控件相对父节点的坐标
-GetPosition	接口	客户端	返回相机中心
-GetGlobalPosition	接口	客户端	获取控件全局坐标
-SetSize	接口	客户端	设置控件的大小
-SetSize	接口	服务端	设置实体的包围盒。设置过大会导致游戏卡顿。实体的scale的立方乘以包围盒的体积不可超过32768
-GetSize	接口	客户端	获取控件的大小
-GetSize	接口	客户端	获取实体的包围盒
-GetSize	接口	服务端	获取实体的包围盒
-SetVisible	接口	客户端	根据控件路径选择是否显示某控件，可以通过传入空字符串（""）的方式来调整整个JSON的显示/隐藏
-SetVisible	接口	客户端	设置Shape是否可见
-GetVisible	接口	客户端	根据控件路径返回某控件是否已显示
-GetVisible	接口	客户端	获取Shape是否可见
-SetTouchEnable	接口	客户端	设置控件是否可点击交互
-SetAlpha	接口	客户端	设置节点的透明度，仅对image和label控件生效
-SetLayer	接口	客户端	设置控件节点的层级，可以通过传入空字符串（""）的方式来调整整个JSON的基础层级
-SetLayer	接口	客户端	设置序列帧渲染层级，默认层级为1，当层级不为1时表示该特效开启特效分层渲染功能。特效（粒子和帧动画）分层渲染时，层级越高渲染越靠后，层级大的会遮挡层级低的，且同一层级的特效会根据特效的相对位置产生正确的相互遮挡关系。
-SetLayer	接口	客户端	粒子默认层级为1，当层级不为1时表示该特效开启特效分层渲染功能。特效（粒子和帧动画）分层渲染时，层级越高渲染越靠后，层级大的会遮挡层级低的，且同一层级的特效会根据特效的相对位置产生正确的相互遮挡关系。
-GetPath	接口	客户端	返回当前控件的相对路径，路径从画布节点开始算起
-GetChildByName	接口	客户端	根据子控件的名称获取BaseUIControl实例
-GetChildByPath	接口	客户端	根据相对路径获取BaseUIControl实例
-resetAnimation	接口	客户端	重置该控件的动画
-PauseAnimation	接口	客户端	暂停动画，暂停后的动画会停在当前的状态
-PlayAnimation	接口	客户端	继续播放动画，从动画当前状态开始播放
-StopAnimation	接口	客户端	停止动画，动画将恢复到第一段动画片段的from状态
-StopAnimation	接口	客户端	停止播放玩家通用动作
-SetAnimation	接口	客户端	给单一属性设置动画，已有重复的会设置失败，需要先remove
-RemoveAnimation	接口	客户端	删除单一属性的动画，删除后的值与当前状态有关，建议删除后重新设置该属性值
-SetAnimEndCallback	接口	客户端	设置动画播放结束后的回调，每次设置都会覆盖上一次的设置
-RemoveAnimEndCallback	接口	客户端	移除动画播放结束后的回调
-IsAnimEndCallbackRegistered	接口	客户端	控件是否对名称为animName的动画进行了注册回调
-asLabel	接口	客户端	将当前BaseUIControl转换为LabelUIControl实例，如当前控件非Label类型则返回None
-asButton	接口	客户端	将当前BaseUIControl转换为ButtonUIControl实例，如当前控件非button类型则返回None
-asImage	接口	客户端	将当前BaseUIControl转换为ImageUIControl实例，如当前控件非image类型则返回None
-asGrid	接口	客户端	将当前BaseUIControl转换为GridUIControl实例，如当前控件非grid类型则返回None
-asScrollView	接口	客户端	将当前BaseUIControl转换为ScrollViewUIControl实例，如当前控件非scrollview类型则返回None
-asSwitchToggle	接口	客户端	将当前BaseUIControl转换为SwitchToggleUIControl实例，如当前控件非panel类型或非toggle则返回None
-asTextEditBox	接口	客户端	将当前BaseUIControl转换为TextEditBoxUIControl实例，如当前控件非editbox类型则返回None
-asProgressBar	接口	客户端	将当前BaseUIControl转换为ProgressBarUIControl实例，如当前控件非panel类型则返回None
-asNeteasePaperDoll	接口	客户端	将当前BaseUIControl转换为NeteasePaperDollUIControl实例，如当前控件非custom类型则返回None
-asMiniMap	接口	客户端	将当前BaseUIControl转换为MiniMapUIControl实例，如当前控件非小地图类型则返回None
-asSlider	接口	客户端	将当前BaseUIControl转换为SliderUIControl实例，如当前控件非滑动条类型则返回None
-asItemRenderer	接口	客户端	将当前BaseUIControl转换为ItemRenderer实例，如当前控件非custom类型则返回None
-asNeteaseComboBox	接口	客户端	将当前BaseUIControl转换为NeteaseComboBoxUIControl实例，如当前控件非panel类型则返回None
-asStackPanel	接口	客户端	将当前BaseUIControl转换为StackPanelUIControl实例，如当前控件非stackPanel类型则返回None
-asInputPanel	接口	客户端	将当前BaseUIControl转换为InputPanelUIControl实例，如当前控件非inputPanel类型则返回None
-asSelectionWheel	接口	客户端	将当前BaseUIControl转换为SelectionWheelUIControl实例，如当前控件非selectionWheel类型则返回None
-GetPropertyBag	接口	客户端	获取PropertyBag
-SetPropertyBag	接口	客户端	设置PropertyBag,将使用字典中的每个值来覆盖原本PropertyBag中的值
+CreatePxActor	接口	服务端	给实体创建自定义刚体
+AddBoxGeometry	接口	服务端	给自定义刚体创建盒形碰撞体
+AddCapsuleGeometry	接口	服务端	给自定义刚体创建胶囊形碰撞体
+AddSphereGeometry	接口	服务端	给自定义刚体创建球形碰撞体
+AddBoxTrigger	接口	服务端	给自定义刚体创建盒子形触发器
+SetRigidBodyFlag	接口	服务端	设置自定义刚体的行为开关
+SetRigidDynamicLockFlags	接口	服务端	设置自定义刚体的约束
+SetActorFlag	接口	服务端	设置物理实体的行为开关
+SetKinematicTarget	接口	服务端	设置运动学刚体的目标变换，仅对开启了PxRigidBodyFlag.eKINEMATIC的自定义刚体生效
+SetGlobalPose	接口	服务端	设置自定义刚体的变换（直接瞬移）
+AddForce	接口	服务端	对自定义刚体的质心添加力，对运动学刚体无效
+AddForceAtPosLocal	接口	服务端	对自定义刚体的指定位置添加力，对运动学刚体无效
+AddForceAtPos	接口	服务端	对自定义刚体的指定位置添加力，对运动学刚体无效
+GetQuaternion	接口	服务端	获取自定义刚体的四元数旋转
+GetQuaternion	接口	客户端	获取自定义刚体的四元数旋转
+Raycast	接口	服务端	射线检测，获取与射线相交的碰撞体。目前仅支持获取自定义刚体
+Raycast	接口	客户端	射线检测，获取与射线相交的碰撞体。目前仅支持获取自定义刚体
 GetBlockStates	接口	服务端	获取<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>
 SetBlockStates	接口	服务端	设置<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>
 GetBlockAuxValueFromStates	接口	服务端	根据方块名称和<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>获取方块附加值AuxValue
@@ -169,11 +130,11 @@ HasEffect	接口	服务端	获取实体是否存在当前状态效果
 GetPos	接口	客户端	获取实体位置
 GetPos	接口	客户端	获取序列帧特效的位置
 GetPos	接口	服务端	获取实体位置
-GetPos	接口	客户端	获取粒子发射器位置
 GetPos	接口	客户端	获取Shape的位置
 GetPos	接口	客户端	获取粒子发射器的世界坐标位置
 GetFootPos	接口	客户端	获取实体脚所在的位置
 GetFootPos	接口	服务端	获取实体脚所在的位置
+SetPosForClientEntity	接口	客户端	设置客户端实体位置。
 SetBiomeInfo	接口	服务端	设置群系天气相关参数
 GetBiomeInfo	接口	服务端	获取群系天气相关参数
 GetBiomeName	接口	服务端	获取某一位置所属的生物群系信息
@@ -220,7 +181,6 @@ GetOwnerId	接口	客户端	获取驯服生物的主人id
 SetEntityTamed	接口	服务端	设置生物驯服，需要配合 entityEvent组件使用。该类驯服不包含骑乘功能。
 SetPos	接口	客户端	设置序列帧的位置
 SetPos	接口	服务端	设置实体位置
-SetPos	接口	客户端	设置粒子发射器位置
 SetPos	接口	客户端	设置Shape的位置
 SetPos	接口	客户端	设置粒子发射器的世界坐标位置
 SetRotUseZXY	接口	客户端	设置序列帧的旋转，旋转顺序按照绕z,x,y轴旋转
@@ -306,6 +266,8 @@ HideWalkGui	接口	客户端	隐藏游戏中跑/走按钮。隐藏后点击相�
 HideJumpGui	接口	客户端	隐藏游戏中右下角的跳跃按钮。隐藏后点击相应位置不会响应
 HideSlotBarGui	接口	客户端	隐藏游戏中底部中间的物品栏界面
 HideSneakGui	接口	客户端	隐藏游戏中左下角方向键的中心处潜行按钮。隐藏后点击相应位置不会响应
+HideNeteaseStoreGui	接口	客户端	隐藏游戏中的网易商店按钮。隐藏后点击相应位置不会响应
+OpenNeteaseStoreGui	接口	客户端	打开游戏中的网易商店购买商品界面
 HideSwimGui	接口	客户端	隐藏游戏中的浮潜按钮。隐藏后点击相应位置不会响应。
 HideChangePersonGui	接口	客户端	隐藏切换人称的按钮。隐藏后点击相应位置不会响应
 HideNameTag	接口	客户端	隐藏场景内所有名字，包括玩家名字，生物的自定义名称，物品展示框与命令方块的悬浮文本等
@@ -355,10 +317,6 @@ StartProfile	接口	客户端	开始启动客户端脚本性能分析，启动�
 StartProfile	接口	服务端	开始启动服务端脚本性能分析，启动后调用[StopProfile](#stopprofile)即可在路径fileName生成函数性能火焰图，此接口只支持PC端。生成的火焰图可以用浏览器打开，推荐chrome浏览器。
 StopProfile	接口	客户端	停止客户端脚本性能分析并生成火焰图，与[StartProfile](#startprofile)配合使用，此接口只支持PC端
 StopProfile	接口	服务端	停止服务端脚本性能分析并生成火焰图，与[StartProfile](#startprofile)配合使用，此接口只支持PC端
-StartMemProfile	接口	客户端	开始启动客户端脚本内存分析，启动后调用[StopMemProfile](#stopMemProfile)即可在路径fileName生成函数内存火焰图，此接口只支持PC端。生成的火焰图可以用浏览器打开，推荐chrome浏览器。
-StartMemProfile	接口	服务端	开始启动服务端脚本内存分析，启动后调用[StopMemProfile](#stopMemProfile)即可在路径fileName生成函数内存火焰图，此接口只支持PC端。生成的火焰图可以用浏览器打开，推荐chrome浏览器。
-StopMemProfile	接口	客户端	停止客户端脚本内存分析并生成火焰图，与[StartMemProfile](#startMemProfile)配合使用，此接口只支持PC端
-StopMemProfile	接口	服务端	停止服务端脚本内存分析并生成火焰图，与[StartMemProfile](#startMemProfile)配合使用，此接口只支持PC端
 StartMultiProfile	接口	客户端	开始启动服务端与客户端双端脚本性能分析，启动后调用[StopMultiProfile](#stopmultiprofile)即可在路径fileName生成函数性能火焰图。双端采集时数据误差较大，建议优先使用[StartProfile](#startprofile)单端版本，此接口只支持PC端
 StartMultiProfile	接口	服务端	开始启动服务端与客户端双端脚本性能分析，启动后调用[StopMultiProfile](#stopmultiprofile)即可在路径fileName生成函数性能火焰图。双端采集时数据误差较大，建议优先使用[StartProfile](#startprofile)单端版本，此接口只支持PC端
 StopMultiProfile	接口	客户端	停止双端脚本性能分析并生成火焰图，与[StartMultiProfile](#startmultiprofile)配合使用，此接口只支持PC端
@@ -379,6 +337,7 @@ SetResourceFastload	接口	客户端	设置资源快速加载
 GetResourceFastload	接口	客户端	获取资源快速加载设置
 GetEnableReconnectNetgame	接口	客户端	获取是否允许断线重连
 GetModConfigJson	接口	客户端	以字典形式返回指定路径的json格式配置文件的内容，文件必须放置在资源包的/modconfigs目录下
+GetModConfigJson	接口	服务端	以字典形式返回指定路径的json格式配置文件的内容，文件必须放置在行为包的/modconfigs目录下
 PushScreen	接口	客户端	使用堆栈管理的方式创建UI
 PopScreen	接口	客户端	使用堆栈管理的方式关闭UI
 GetTopScreen	接口	客户端	获取UI堆栈栈顶的UI节点
@@ -393,7 +352,6 @@ ClickInteractGUI	接口	客户端	模拟点击交互按钮，交互按钮指的�
 OpenPauseGui	接口	客户端	打开原版暂停界面
 OpenChatGui	接口	客户端	打开原版聊天栏
 OpenFoldGui	接口	客户端	打开原版下拉界面
-OpenVoiceGui	接口	客户端	打开原版语音界面
 OpenReportGui	接口	客户端	打开原版举报界面
 OpenEmoteGui	接口	客户端	打开表情界面
 StartCoroutine	接口	客户端	开启客户端协程，实现函数分段式执行，可用于缓解复杂逻辑计算导致游戏卡顿问题
@@ -486,6 +444,7 @@ AddPlayerSoundEffect	接口	客户端	增加玩家音效资源
 AddActorSoundEffect	接口	客户端	增加生物音效资源
 AddSoundEffectToOneActor	接口	客户端	增加单个生物的音效资源
 AddPlayerAnimationIntoState	接口	客户端	在玩家的动画控制器中的状态添加动画或者动画控制器
+RemovePlayerAnimationFromState	接口	客户端	在玩家的动画控制器中的状态移除动画或者动画控制器
 AddActorScriptAnimate	接口	客户端	在生物的客户端实体定义（minecraft:client_entity）json中的scripts/animate节点添加动画/动画控制器
 AddScriptAnimateToOneActor	接口	客户端	在单个生物的客户端实体定义（minecraft:client_entity）json中的scripts/animate节点添加动画/动画控制器
 AddPlayerScriptAnimate	接口	客户端	在玩家的客户端实体定义（minecraft:client_entity）json中的scripts/animate节点添加动画/动画控制器
@@ -512,6 +471,8 @@ GetEntityExtraUniforms	接口	客户端	获取在实体shader当中使用的自�
 GetEntityUIExtraUniforms	接口	客户端	获取在实体shader当中使用的UI自定义变量的值，该变量可在微软UI纸娃娃（paperdoll）及网易版纸娃娃（neteasepaperdoll)上使用identifier渲染某一类生物实体时使用。该自定义变量包含EXTRA_ACTOR_UNIFORM1,EXTRA_ACTOR_UNIFORM2,EXTRA_ACTOR_UNIFORM3,EXTRA_ACTOR_UNIFORM4，总共4组，每组为一个vec4(float, float, float ,float)类型的向量。
 SetActorBlockGeometryScale	接口	客户端	设置实体的方块几何体模型的缩放倍率。
 GetActorBlockGeometryScale	接口	客户端	获取实体的方块几何体模型的缩放倍率。
+GetQueryableBoneOrientation	接口	客户端	获取实体的原版模型指定骨骼的骨骼矩阵信息。
+ResetEntityExtraSkin	接口	客户端	清除通过 actorRender 接口为实体（包括玩家）额外添加的皮肤渲染组件（几何体、动画、动画控制器、贴图、材质、渲染控制器），还原实体到原始渲染状态。
 GetFov	接口	客户端	获取视野大小
 SetFov	接口	客户端	设置视野大小
 LockCamera	接口	客户端	锁定摄像机
@@ -526,6 +487,10 @@ SetCameraBindActorId	接口	客户端	将摄像机绑定到目标实体身上（
 ResetCameraBindActorId	接口	客户端	将摄像机重新绑定回主角身上
 SetCameraDistanceFixed	接口	客户端	设置相机弹簧臂固定，即设置当相机遇到阻挡时是否压缩与人物之间的距离
 GetForward	接口	客户端	返回相机向前的方向
+GetPosition	接口	客户端	返回相机中心
+GetPosition	接口	客户端	获取控件相对父节点的坐标
+SetCameraPos	接口	客户端	设置相机中心的位置
+ResetCameraPos	接口	客户端	重置相机位置模式，使相机恢复跟随玩家。用于取消SetCameraPos设置的独立相机位置。
 SetCameraRotation	接口	客户端	设定摄像机的朝向
 GetCameraRotation	接口	客户端	获取摄像机的朝向
 SetCameraOffset	接口	客户端	设置摄像机偏移量
@@ -554,6 +519,10 @@ SetHealthBarDeviation	接口	客户端	设置某个entity血条的相对高度
 DetectStructure	接口	服务端	检测自定义门的结构
 SetGridDimension	接口	客户端	设置Grid控件的大小
 GetGridItem	接口	客户端	根据网格位置获取元素控件
+GetFishingLineMax	接口	客户端	获取钓鱼线的最大长度
+GetFishingLineMax	接口	服务端	获取服务端当前设置的钓鱼线最大长度
+GetFishingLineColor	接口	客户端	获取钓鱼线的颜色
+GetFishingLineColor	接口	服务端	获取服务端当前设置的钓鱼线颜色
 GetBlockClip	接口	客户端	获取指定位置方块当前clip的aabb
 GetBlockClip	接口	服务端	获取某一位置方块当前<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/2-自定义方块/1-JSON组件.html#netease-aabb">clip的aabb</a>
 GetBlockCollision	接口	客户端	获取指定位置方块当前collision的aabb
@@ -624,7 +593,6 @@ GetBlockPoweredState	接口	服务端	获取某个坐标方块的充能状态
 DisableOriginMusic	接口	客户端	停止原生背景音乐
 PlayGlobalCustomMusic	接口	客户端	播放背景音乐
 PlayCustomMusic	接口	客户端	播放场景音效，包括原版音效及自定义音效
-PlayCustomUIMusic	接口	客户端	播放UI音效，包括原版音效及自定义音效
 StopCustomMusic	接口	客户端	停止音效，包括场景音效与背景音乐，将依据fadeOutTime触发OnMusicStopClientEvent事件
 StopCustomMusicById	接口	客户端	停止场景音效
 SetCustomMusicLoop	接口	客户端	设定指定音乐是否循环播放，包括场景音效与背景音乐
@@ -633,7 +601,6 @@ SetBindWorldPosition	接口	客户端	设置UI绑定的worldPosition
 Update	接口	客户端	客户端每帧调用，1秒有30帧
 Destroy	接口	客户端	UI生命周期函数，当UI销毁时调用。
 Create	接口	客户端	UI生命周期函数，当UI创建成功时调用。
-Create	接口	客户端	创建粒子发射器, 创建后立即播放
 OnDeactive	接口	客户端	UI生命周期函数，当栈顶UI有其他UI入栈时调用。
 OnActive	接口	客户端	UI生命周期函数，当UI重新回到栈顶时调用。
 SetScreenVisible	接口	客户端	设置是否显示本界面
@@ -762,6 +729,8 @@ SetPistonMaxInteractionCount	接口	服务端	设置活塞/粘性活塞最多推
 GetPistonMaxInteractionCount	接口	服务端	获取活塞/粘性活塞最多推动的方块数量，默认为12个方块，可能被其他开发者修改。
 GetPistonMaxInteractionCount	接口	客户端	获取活塞/粘性活塞最多推动的方块数量，默认为12个方块，可能被其他开发者修改。
 UseItemAttackEntity	接口	服务端	使用指定物品攻击某个实体。
+UseItemToPos	接口	服务端	对某个方块使用指定物品。
+UseItemToEntity	接口	服务端	模拟对某个实体使用物品。
 SetScrollViewPos	接口	客户端	设置当前scroll_view内容的位置
 GetScrollViewPos	接口	客户端	获得当前scroll_view最上方内容的位置
 SetScrollViewPercentValue	接口	客户端	设置当前scroll_view内容的百分比位置
@@ -773,7 +742,7 @@ SetBlockNew	接口	服务端	设置某一位置的方块
 SetJigsawBlock	接口	服务端	在某一位置放置拼图方块
 SetLiquidBlock	接口	服务端	设置某一位置的方块的extraBlock，可在此设置方块含水等
 SetSnowBlock	接口	服务端	设置某一位置的方块含雪
-PlayerDestoryBlock	接口	服务端	3.8 已废弃：拼写错误，请使用 PlayerDestroyBlock。 旧名称仅保留用于搜索兼容，新开发请使用 PlayerDestroyBlock。
+PlayerDestroyBlock	接口	服务端	使用手上工具破坏方块
 OpenWorkBench	接口	服务端	在玩家当前位置打开工作台UI，不依赖于工作台方块
 PlayerUseItemToPos	接口	服务端	模拟玩家对某个坐标使用物品
 PlayerUseItemToEntity	接口	服务端	玩家使用手上物品对某个生物使用
@@ -816,17 +785,69 @@ SetFrameItemDropChange	接口	服务端	设置点击物品展示框时生成掉�
 GetFrameItemDropChange	接口	服务端	获取物品展示框里物品的掉落几率
 SetFrameItem	接口	服务端	设置物品展示框的物品
 GetFrameItem	接口	服务端	获取物品展示框的物品
-AddTouchEventParams	接口	客户端	开启按钮回调功能，不调用该函数则按钮无回调
-AddHoverEventParams	接口	客户端	开启按钮的悬浮回调功能，不调用该函数则按钮无悬浮回调
-SetButtonTouchDownCallback	接口	客户端	设置按钮按下时触发的回调函数
-SetButtonHoverInCallback	接口	客户端	设置鼠标进入按钮时触发的悬浮回调函数
-SetButtonHoverOutCallback	接口	客户端	设置鼠标退出按钮时触发的悬浮回调函数
-SetButtonTouchUpCallback	接口	客户端	设置触控在按钮范围内弹起时的回调函数
-SetButtonTouchCancelCallback	接口	客户端	设置触控在按钮范围外弹起时触发的回调函数
-SetButtonTouchMoveCallback	接口	客户端	设置按下后触控移动时触发的回调函数
-SetButtonTouchMoveInCallback	接口	客户端	设置按下按钮后进入控件时触发的回调函数
-SetButtonTouchMoveOutCallback	接口	客户端	设置按下按钮后退出控件时触发的回调函数
-SetButtonScreenExitCallback	接口	客户端	设置按钮所在画布退出时若鼠标仍未抬起时触发回调函数
+SetPosition	接口	客户端	设置控件相对父节点的坐标
+SetFullSize	接口	客户端	设置控件的大小，支持比例形式以及绝对值
+GetFullSize	接口	客户端	获取控件的大小，支持百分比以及绝对值
+SetFullPosition	接口	客户端	设置控件的锚点坐标（全局坐标），支持比例值以及绝对值
+GetFullPosition	接口	客户端	获取控件的锚点坐标，支持比例值以及绝对值
+SetAnchorFrom	接口	客户端	设置控件相对于父节点的锚点
+GetAnchorFrom	接口	客户端	判断控件相对于父节点的哪个锚点来计算位置与大小
+SetAnchorTo	接口	客户端	设置控件自身锚点位置
+GetAnchorTo	接口	客户端	获取控件自身锚点位置信息
+SetClipOffset	接口	客户端	设置控件的裁剪偏移信息
+GetClipOffset	接口	客户端	获取控件的裁剪偏移信息
+SetClipsChildren	接口	客户端	设置控件是否开启裁剪内容
+GetClipsChildren	接口	客户端	根据控件路径返回某控件是否开启裁剪内容
+SetMaxSize	接口	客户端	设置控件所允许的最大的大小值
+GetMaxSize	接口	客户端	获取控件所允许的最大的大小值
+SetMinSize	接口	客户端	设置控件所允许的最小的大小值
+GetMinSize	接口	客户端	获取控件所允许的最小的大小值
+GetGlobalPosition	接口	客户端	获取控件全局坐标
+SetSize	接口	客户端	设置控件的大小
+SetSize	接口	服务端	设置实体的包围盒。设置过大会导致游戏卡顿。实体的scale的立方乘以包围盒的体积不可超过32768
+GetSize	接口	客户端	获取控件的大小
+GetSize	接口	客户端	获取实体的包围盒
+GetSize	接口	服务端	获取实体的包围盒
+SetVisible	接口	客户端	根据控件路径选择是否显示某控件，可以通过传入空字符串（""）的方式来调整整个JSON的显示/隐藏
+SetVisible	接口	客户端	设置Shape是否可见
+GetVisible	接口	客户端	根据控件路径返回某控件是否已显示
+GetVisible	接口	客户端	获取Shape是否可见
+SetTouchEnable	接口	客户端	设置控件是否可点击交互
+SetAlpha	接口	客户端	设置节点的透明度，仅对image和label控件生效
+SetLayer	接口	客户端	设置控件节点的层级，可以通过传入空字符串（""）的方式来调整整个JSON的基础层级
+SetLayer	接口	客户端	设置序列帧渲染层级，默认层级为1，当层级不为1时表示该特效开启特效分层渲染功能。特效（粒子和帧动画）分层渲染时，层级越高渲染越靠后，层级大的会遮挡层级低的，且同一层级的特效会根据特效的相对位置产生正确的相互遮挡关系。
+SetLayer	接口	客户端	粒子默认层级为1，当层级不为1时表示该特效开启特效分层渲染功能。特效（粒子和帧动画）分层渲染时，层级越高渲染越靠后，层级大的会遮挡层级低的，且同一层级的特效会根据特效的相对位置产生正确的相互遮挡关系。
+GetPath	接口	客户端	返回当前控件的相对路径，路径从画布节点开始算起
+GetChildByName	接口	客户端	根据子控件的名称获取BaseUIControl实例
+GetChildByPath	接口	客户端	根据相对路径获取BaseUIControl实例
+resetAnimation	接口	客户端	重置该控件的动画
+PauseAnimation	接口	客户端	暂停动画，暂停后的动画会停在当前的状态
+PlayAnimation	接口	客户端	继续播放动画，从动画当前状态开始播放
+StopAnimation	接口	客户端	停止动画，动画将恢复到第一段动画片段的from状态
+StopAnimation	接口	客户端	停止播放玩家通用动作
+SetAnimation	接口	客户端	给单一属性设置动画，已有重复的会设置失败，需要先remove
+RemoveAnimation	接口	客户端	删除单一属性的动画，删除后的值与当前状态有关，建议删除后重新设置该属性值
+SetAnimEndCallback	接口	客户端	设置动画播放结束后的回调，每次设置都会覆盖上一次的设置
+RemoveAnimEndCallback	接口	客户端	移除动画播放结束后的回调
+IsAnimEndCallbackRegistered	接口	客户端	控件是否对名称为animName的动画进行了注册回调
+asLabel	接口	客户端	将当前BaseUIControl转换为LabelUIControl实例，如当前控件非Label类型则返回None
+asButton	接口	客户端	将当前BaseUIControl转换为ButtonUIControl实例，如当前控件非button类型则返回None
+asImage	接口	客户端	将当前BaseUIControl转换为ImageUIControl实例，如当前控件非image类型则返回None
+asGrid	接口	客户端	将当前BaseUIControl转换为GridUIControl实例，如当前控件非grid类型则返回None
+asScrollView	接口	客户端	将当前BaseUIControl转换为ScrollViewUIControl实例，如当前控件非scrollview类型则返回None
+asSwitchToggle	接口	客户端	将当前BaseUIControl转换为SwitchToggleUIControl实例，如当前控件非panel类型或非toggle则返回None
+asTextEditBox	接口	客户端	将当前BaseUIControl转换为TextEditBoxUIControl实例，如当前控件非editbox类型则返回None
+asProgressBar	接口	客户端	将当前BaseUIControl转换为ProgressBarUIControl实例，如当前控件非panel类型则返回None
+asNeteasePaperDoll	接口	客户端	将当前BaseUIControl转换为NeteasePaperDollUIControl实例，如当前控件非custom类型则返回None
+asMiniMap	接口	客户端	将当前BaseUIControl转换为MiniMapUIControl实例，如当前控件非小地图类型则返回None
+asSlider	接口	客户端	将当前BaseUIControl转换为SliderUIControl实例，如当前控件非滑动条类型则返回None
+asItemRenderer	接口	客户端	将当前BaseUIControl转换为ItemRenderer实例，如当前控件非custom类型则返回None
+asNeteaseComboBox	接口	客户端	将当前BaseUIControl转换为NeteaseComboBoxUIControl实例，如当前控件非panel类型则返回None
+asStackPanel	接口	客户端	将当前BaseUIControl转换为StackPanelUIControl实例，如当前控件非stackPanel类型则返回None
+asInputPanel	接口	客户端	将当前BaseUIControl转换为InputPanelUIControl实例，如当前控件非inputPanel类型则返回None
+asSelectionWheel	接口	客户端	将当前BaseUIControl转换为SelectionWheelUIControl实例，如当前控件非selectionWheel类型则返回None
+GetPropertyBag	接口	客户端	获取PropertyBag
+SetPropertyBag	接口	客户端	设置PropertyBag,将使用字典中的每个值来覆盖原本PropertyBag中的值
 HideShopGate	接口	客户端	隐藏网易商城入口
 ShowShopGate	接口	客户端	显示网易商城入口
 OpenShopWindow	接口	客户端	打开网易商城窗口。PC端无效（Apollo的PC端请使用商城插件）
@@ -837,6 +858,8 @@ GetUiItem	接口	客户端	获取ItemRenderer控件显示的物品，ItemRendere
 GetChestBoxSize	接口	服务端	获取箱子容量大小
 SetChestBoxItemNum	接口	服务端	设置箱子槽位物品数目
 SetChestBoxItemExchange	接口	服务端	交换箱子里物品的槽位
+SetFishingLineMax	接口	服务端	设置钓鱼线的最大长度（超过此长度会断线），设置后会自动同步到所有客户端。
+SetFishingLineColor	接口	服务端	设置钓鱼线的颜色，设置后会自动同步到所有客户端。
 GetEngineType	接口	服务端	获取实体类型，主要用于判断实体是否属于某一类型的生物。
 GetEngineType	接口	客户端	获取实体类型，主要用于判断实体是否属于某一类型的生物。
 GetEngineTypeStr	接口	服务端	获取实体的类型名称
@@ -883,6 +906,8 @@ GetPlayerDestroyTotalTime	接口	客户端	获取玩家破坏方块需要的时�
 GetPlayerDestroyTotalTime	接口	服务端	获取玩家破坏方块需要的时间，受玩家状态（急迫、潮涌、挖掘疲劳）和手持物及手持物附魔（效率）影响
 IsOnLadder	接口	客户端	获取玩家是否在梯子/藤蔓上
 IsInScaffolding	接口	客户端	获取玩家是否在脚手架中
+GetPlayerIsFishing	接口	客户端	获取玩家是否在钓鱼
+GetPlayerIsFishing	接口	服务端	获取玩家是否在钓鱼
 SetPlayerHunger	接口	服务端	设置玩家饥饿度。
 GetPlayerCurrentExhaustionValue	接口	服务端	获取玩家foodExhaustionLevel的当前消耗度。详见<a href="https://zh.minecraft.wiki/w/%E9%A5%A5%E9%A5%BF#%E6%9C%BA%E5%88%B6">消耗度介绍</a>
 SetPlayerCurrentExhaustionValue	接口	服务端	设置玩家foodExhaustionLevel的当前消耗度。详见<a href="https://zh.minecraft.wiki/w/%E9%A5%A5%E9%A5%BF#%E6%9C%BA%E5%88%B6">消耗度介绍</a>
@@ -914,7 +939,7 @@ GetPlayerAbilities	接口	服务端	获取玩家具体权限
 GetPlayerExhaustionRatioByType	接口	服务端	获取玩家某行为饥饿度消耗倍率
 SetPlayerExhaustionRatioByType	接口	服务端	设置玩家某行为饥饿度消耗倍率
 SetInteracteCenterOffset	接口	服务端	设置玩家服务端交互中心的偏移
-GetInteracteCenterOffset	接口	服务端	获取玩家[服务端交互中心](../../更新信息/2.8.md#玩家摄像机)的偏移
+GetInteracteCenterOffset	接口	服务端	获取玩家服务端交互中心的偏移，对应使用[SetPickCenterOffset](#setpickcenteroffset)修改的偏移值
 GetPlayerInteracteRange	接口	服务端	获取玩家服务端的交互距离
 SetPlayerInteracteRange	接口	服务端	设置玩家服务端的交互距离
 SetPlayerRespawnPos	接口	服务端	设置玩家复活的位置与维度
@@ -951,6 +976,10 @@ SetOffsetDelta	接口	客户端	设置点击面板的拖拽偏移量
 GetOffsetDelta	接口	客户端	获得点击面板的拖拽偏移量
 OpenResourceCenterDetailWindow	接口	客户端	打开网易资源中心组件详情界面。该接口只能在横屏版本手机端使用
 OpenDeveloperHomeWindow	接口	客户端	打开网易资源中心开发者主页。该接口只能在横屏版本手机端使用
+RegisterSettingInst	接口	客户端	注册通用设置实例
+GetSettingInst	接口	客户端	获取当前模组的通用设置实例
+OpenSettingUI	接口	客户端	在模组信息界面中打开设置页面（此操作仅可访问本模组的配置选项）
+CloseSettingUI	接口	客户端	关闭模组信息界面
 GetEntityNBTTags	接口	服务端	获取实体的NBT标签
 GetEntityDefinitions	接口	服务端	获取实体的命名空间ID及其当前和之前的定义组件群
 GetEntityFallDistance	接口	服务端	获取实体的坠落高度，越大的值会给予实体更大的坠落伤害，建议在[OnGroundServerEvent](../../事件/实体.md#ongroundserverevent)事件中调用
@@ -996,14 +1025,11 @@ IsNaturallySpawned	接口	服务端	获取生物是否为自然生成的
 IsPregnant	接口	服务端	获取生物是否怀孕，截止至网易2.9版本，只对海龟有效
 SetFootPos	接口	服务端	设置实体脚底所在的位置
 Play	接口	客户端	播放序列帧
-Play	接口	客户端	播放粒子发射器
 Play	接口	客户端	播放粒子特效
 Pause	接口	客户端	暂停播放，序列帧定格在当前时刻，再次调用Play时继续播放
-Pause	接口	客户端	暂停粒子发射器的逻辑更新，但保持渲染状态
 Pause	接口	客户端	暂停播放，粒子定格在当前时刻，再次调用Play时继续播放
 Pause	接口	客户端	暂停模型特效（即使用CreateEngineEffectBind创建的特效）
 Stop	接口	客户端	停止序列帧（不是暂停）
-Stop	接口	客户端	停止粒子发射器播放(不渲染且不更新逻辑)
 Stop	接口	客户端	停止粒子播放
 SetFaceCamera	接口	客户端	设置序列帧是否始终朝向摄像机，默认为是
 SetLoop	接口	客户端	设置序列帧是否循环播放，默认为否
@@ -1030,6 +1056,7 @@ RegisterUpdateFunc	接口	客户端	注册属性值变换时的回调函数，�
 UnRegisterUpdateFunc	接口	客户端	反注册属性值变换时的回调函数
 SetEntityScale	接口	服务端	设置实体的放缩比例大小，设置比例过大会导致游戏卡顿，建议控制在20倍以内。实体的scale的立方乘以包围盒的体积不可超过32768
 GetEntityScale	接口	服务端	获取实体的放缩比例大小
+GetHostPlayerUid	接口	服务端	获取服务器拥有者的uid。
 SetToggleState	接口	客户端	设置Toggle开关控件的值
 GetToggleState	接口	客户端	获取Toggle开关控件的状态
 GetConfigData	接口	客户端	获取本地配置文件中存储的数据
@@ -1066,6 +1093,7 @@ ModelPlayAni	接口	客户端	纯骨骼播放动作。 支持骨骼动画混合�
 HideModel	接口	客户端	隐藏纯模型
 ShowModel	接口	客户端	显示纯模型
 SetFreeModelBoundingBox	接口	客户端	设置自由模型的包围盒
+SetFreeModelDimensionId	接口	客户端	设置自由模型的维度归属
 BindEntityToEntity	接口	客户端	绑定骨骼模型跟随其他entity,如果当前entity是本地玩家，摄像机也跟随其他entity
 ResetBindEntity	接口	客户端	取消目标entity的绑定实体，取消后不再跟随任何其他entity
 SetModelOffset	接口	客户端	模型增加偏移量
@@ -1105,6 +1133,8 @@ GetModelName	接口	服务端	获取实体的模型名称
 GetServerSystemCls	接口	服务端	用于获取服务器system基类。实现新的system时，需要继承该接口返回的类
 SetEntityLimit	接口	服务端	设置世界最大可生成实体数量上限。可生成实体指具有spawnrule的实体。当前世界上被加载的可生成实体数量超过这个上限时，生物就不会再通过spawnrule刷出。
 GetEntityLimit	接口	服务端	获取世界最大可生成实体数量上限。可生成实体的含义见[SetEntityLimit](#setentitylimit)
+StartMemProfile	接口	服务端	开始启动服务端脚本内存分析，启动后调用[StopMemProfile](#stopMemProfile)即可在路径fileName生成函数内存火焰图，此接口只支持PC端。生成的火焰图可以用浏览器打开，推荐chrome浏览器。
+StopMemProfile	接口	服务端	停止服务端脚本内存分析并生成火焰图，与[StartMemProfile](#startMemProfile)配合使用，此接口只支持PC端
 StartRecordPacket	接口	服务端	开始启动服务端与客户端之间的引擎收发包统计，启动后调用[StopRecordPacket](#stoprecordpacket)即可获取两个函数调用之间引擎收发包的统计信息，仅支持租赁服与Apollo网络服环境（不支持单机环境）
 StopRecordPacket	接口	服务端	停止服务端与客户端之间的引擎收发包统计并输出结果，与[StartRecordPacket](#startrecordpacket)配合使用，输出结果为字典，key为网络包名，value字典中记录收发信息，具体见示例，仅支持租赁服与Apollo网络服环境（不支持单机环境）
 StartRecordEvent	接口	服务端	开始启动服务端与客户端之间的脚本事件收发统计，启动后调用[StopRecordEvent](#stoprecordevent)即可获取两个函数调用之间脚本事件收发的统计信息，仅支持租赁服与Apollo网络服环境（不支持单机环境）
@@ -1142,6 +1172,8 @@ GetRotateRect	接口	客户端	获取图片当前的四个边角点
 SetActorPushable	接口	服务端	设置实体是否可推动
 SpawnItemToPlayerCarried	接口	服务端	生成物品到玩家右手
 SpawnItemToPlayerInv	接口	服务端	生成物品到玩家背包
+GetPlayerItem	接口	服务端	获取玩家物品，支持获取背包，盔甲栏，副手以及主手物品
+GetPlayerItem	接口	客户端	获取玩家物品，支持获取背包（本地玩家），盔甲栏，副手以及主手物品
 ChangePlayerItemTipsAndExtraId	接口	服务端	修改玩家物品的自定义tips和自定义标识符
 AddEnchantToInvItem	接口	服务端	给物品栏的物品添加附魔信息
 AddModEnchantToInvItem	接口	服务端	给物品栏中物品添加自定义附魔信息
@@ -1158,13 +1190,18 @@ GetItemTags	接口	服务端	获取物品在minecraft:tags中定义的tags列表
 GetItemTags	接口	客户端	获取物品在minecraft:tags中定义的tags列表
 GetItemBasicInfo	接口	服务端	获取物品的基础信息
 GetItemBasicInfo	接口	客户端	获取物品的基础信息
+GetPlayerAllItems	接口	服务端	获取玩家指定的槽位的批量物品信息
+GetPlayerAllItems	接口	客户端	获取玩家指定的槽位的批量物品信息，支持获取盔甲栏，副手以及主手物品，背包物品仅支持本地玩家
 SetPlayerAllItems	接口	服务端	添加批量物品信息到指定槽位
+GetEntityItem	接口	服务端	获取生物物品，支持获取背包，盔甲栏，副手以及主手物品
 SetEntityItem	接口	服务端	设置生物物品，建议开发者根据生物特性来进行设置，部分生物设置装备后可能不显示但是死亡后仍然会掉落所设置的装备
 GetCustomName	接口	服务端	获取物品的自定义名称，与铁砧修改的名称一致
 SetCustomName	接口	服务端	设置物品的自定义名称，与使用铁砧重命名一致
 GetUserDataInEvent	接口	服务端	使物品相关服务端事件的<a href="../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#物品信息字典">物品信息字典</a>参数带有userData。在mod初始化时调用即可
 GetUserDataInEvent	接口	客户端	使物品相关客户端事件的<a href="../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#物品信息字典">物品信息字典</a>参数带有userData。在mod初始化时调用即可
 GetSelectSlotId	接口	服务端	获取玩家当前选中槽位
+GetContainerItem	接口	服务端	获取容器内的物品
+GetEnderChestItem	接口	服务端	获取末影箱内的物品
 GetOpenContainerItem	接口	服务端	获取开放容器的物品
 GetPlayerUIItem	接口	服务端	获取合成容器的物品
 SetPlayerUIItem	接口	服务端	设置合成容器的物品
@@ -1185,9 +1222,9 @@ SetItemTierSpeed	接口	服务端	 设置工具类物品的挖掘速度(可通�
 SetItemLayer	接口	服务端	设置物品的叠加贴图，可以在物品的上层与下层叠加自定义贴图。具体使用可参考CustomItemsMod示例。
 RemoveItemLayer	接口	服务端	移除物品的叠加贴图。物品叠加贴图详见SetItemLayer
 GetItemLayer	接口	服务端	获取物品的叠加贴图。物品叠加贴图详见SetItemLayer
-SetShearsDestoryBlockSpeed	接口	服务端	3.8 已废弃：拼写错误，请使用 SetShearsDestroyBlockSpeed。 旧名称仅保留用于搜索兼容，新开发请使用 SetShearsDestroyBlockSpeed。
-CancelShearsDestoryBlockSpeed	接口	服务端	3.8 已废弃：拼写错误，请使用 CancelShearsDestroyBlockSpeed。 旧名称仅保留用于搜索兼容，新开发请使用 CancelShearsDestroyBlockSpeed。
-CancelShearsDestoryBlockSpeedAll	接口	服务端	3.8 已废弃：拼写错误，请使用 CancelShearsDestroyBlockSpeedAll。 旧名称仅保留用于搜索兼容，新开发请使用 CancelShearsDestroyBlockSpeedAll。
+SetShearsDestroyBlockSpeed	接口	服务端	 设置剪刀对某一方块的破坏速度
+CancelShearsDestroyBlockSpeed	接口	服务端	 取消剪刀对某一方块的破坏速度设置
+CancelShearsDestroyBlockSpeedAll	接口	服务端	 取消剪刀对全部方块的破坏速度设置
 SetBrewingStandSlotItem	接口	服务端	设置酿造台指定槽位物品
 GetBrewingStandSlotItem	接口	服务端	获取酿造台指定槽位物品
 SetInputSlotItem	接口	服务端	设置熔炉输入栏物品
@@ -1197,6 +1234,10 @@ GetLoadItems	接口	服务端	获取已经加载的物品id
 GetAllEnchantsInfo	接口	服务端	获取目前已注册的所有附魔信息
 GetAllEnchantsInfo	接口	客户端	获取目前已注册的所有附魔信息
 GetItemInfoByBlockName	接口	服务端	通过方块名称及aux值获取物品信息
+GetPlayerFishHookEntity	接口	服务端	获取玩家钓鱼时候的鱼漂实体id
+GetPlayerFishHookEntity	接口	客户端	获取玩家钓鱼时候的鱼漂实体id
+GetPlayerFishItem	接口	服务端	获取玩家钓鱼时候的鱼竿物品字典
+GetPlayerFishItem	接口	客户端	获取玩家钓鱼时候的鱼竿物品字典
 CreateEventData	接口	服务端/客户端	创建自定义事件的数据，eventData用于发送事件。创建的eventData可以理解为一个dict，可以嵌套赋值dict,list和基本数据类型，但不支持tuple
 ListenForEvent	接口	服务端/客户端	注册监听某个系统抛出的事件。若监听引擎事件时，namespace和systemName分别为GetEngineNamespace()和GetEngineSystemName()。具体每个事件的详细事件data可以参考"事件"分类下的内容
 UnListenForEvent	接口	服务端/客户端	反注册监听某个系统抛出的事件，即不再监听。若是引擎事件，则namespace和systemName分别为[GetEngineNamespace](#getenginenamespace)和[GetEngineSystemName](#getenginesystemname)。与ListenForEvent对应。
@@ -1213,7 +1254,6 @@ Register	接口	客户端	注册实体计算节点
 UnRegister	接口	客户端	注销实体计算节点
 Set	接口	客户端	设置某一个实体计算节点的值
 Get	接口	客户端	获取某一个实体计算节点的值，如果不存在返回注册时的默认值
-GetMolangValue	接口	客户端	获取实体molang变量的值
 EvalMolangExpression	接口	客户端	在实体上下文上执行molang表达式
 EvalMolangExpression	接口	服务端	在实体上下文上执行molang表达式
 GetStringHash64	接口	客户端	返回字符串变量的hash64
@@ -1237,6 +1277,8 @@ SetEntityShareablesItems	接口	服务端	设置生物可分享/可拾取的物�
 RemoveRecipe	接口	服务端	动态禁用配方
 AddRecipe	接口	服务端	动态注册配方，支持配方类型详见<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.html#配方类型说明">[配方类型说明]</a>
 GetRecipeResult	接口	服务端	根据配方id获取配方结果。仅支持合成配方
+GetRecipeByRecipeId	接口	服务端	根据配方id查询配方内容。
+GetRecipeByRecipeId	接口	客户端	根据配方id查询配方内容。
 GetRecipesByResult	接口	服务端	通过输出物品查询配方所需要的输入材料
 GetRecipesByResult	接口	客户端	通过输出物品查询配方所需要的输入材料
 AddBrewingRecipes	接口	服务端	添加酿造台配方的接口
@@ -1244,37 +1286,15 @@ GetRecipesByInput	接口	服务端	通过输入物品查询配方
 GetRecipesByInput	接口	客户端	通过输入物品查询配方
 GetAllProperties	接口	服务端	获取实体属性列表
 SetPropertyValue	接口	服务端	设置实体属性的值
-CreateBindEntityNew	接口	客户端	创建粒子发射器并绑定到指定实体的指定骨骼上, 创建后立即播放
-EmitManually	接口	客户端	手动发射粒子一次
-BindEntity	接口	客户端	绑定粒子发射器到指定实体的指定骨骼上
 BindModel	接口	客户端	绑定粒子发射器到指定骨骼模型的指定骨骼上
 BindModel	接口	客户端	把对象绑定到模型上, 支持绑定序列帧，粒子，文本和其它模型
-Unbind	接口	客户端	解除指定粒子发射器的绑定状态
 SetRelative	接口	客户端	设置粒子是否在局部空间进行计算
 SetRelative	接口	客户端	当粒子绑定了entity或骨骼模型时，发射出的粒子使用entity坐标系还是世界坐标系。与mcstudio特效编辑器中粒子的“相对挂点运动”选项功能相同。
 GetBindingID	接口	客户端	返回粒子绑定的实体id，没有则返回"0"
 GetBindingModelID	接口	客户端	返回绑定的骨骼模型id 没有则返回-1
 Remove	接口	客户端	销毁指定粒子发射器
 Remove	接口	客户端	删除Shape
-RemoveByName	接口	客户端	销毁场景中指定名称(粒子发射器json中的identifier)的所有粒子发射器
 Exist	接口	客户端	判断指定粒子发射器是否存在
-Hide	接口	客户端	隐藏粒子发射器(不渲染)
-Show	接口	客户端	显示粒子发射器(开启渲染)
-Resume	接口	客户端	恢复粒子发射器的逻辑更新，不影响渲染状态
-Resume	接口	客户端	继续播放模型特效（即使用CreateEngineEffectBind创建的特效）
-Replay	接口	客户端	重播粒子发射器
-PlayAt	接口	客户端	设置粒子发射器播放时间点
-IsPausing	接口	客户端	返回粒子发射器的逻辑是否正在被暂停
-IsHiding	接口	客户端	返回粒子发射器是否正在被隐藏(不渲染)
-SetTimeScale	接口	客户端	设置粒子发射器的播放速度
-GetTimeScale	接口	客户端	获取粒子发射器的播放速度
-GetDuration	接口	客户端	获取粒子发射器的播放周期(激活+休眠时间)
-GetActiveDuration	接口	客户端	获取粒子发射器的激活周期
-GetSleepDuration	接口	客户端	获取粒子发射器的休眠周期
-GetLoopAge	接口	客户端	获取粒子发射器当前播放周期内已播放的时间
-GetVariable	接口	客户端	获取粒子发射器的Molang变量值
-SetVariable	接口	客户端	设置粒子发射器的Molang变量值
-GetFacingMode	接口	客户端	返回粒子发射器的粒子朝向模式
 NotifyToServer	接口	客户端	客户端发送事件到服务器
 CreateEngineSfx	接口	客户端	创建序列帧特效
 CreateEngineSfxFromEditor	接口	客户端	指使用资源包中effects/xxx.json，按照编辑器中编辑好的参数创建序列帧。支持环状序列帧
@@ -1294,6 +1314,7 @@ LobbyGetStorageBySort	接口	服务端	排序获取存储的数据。仅联机�
 GetPlayerLevel	接口	服务端	获取玩家等级
 AddPlayerLevel	接口	服务端	修改玩家等级
 GetOffhandItem	接口	客户端	获取左手物品的信息
+GetCarriedItem	接口	客户端	获取右手物品的信息
 GetSlotId	接口	客户端	获取当前手持的快捷栏的槽id
 AddDropItemToWorld	接口	客户端	在客户端添加一个掉落物渲染
 SetDropItemTransform	接口	客户端	设置通过AddDropItemToWorld添加的掉落物的位置、角度和缩放
@@ -1308,6 +1329,16 @@ SetCompassTarget	接口	客户端	设置指南针的朝向位置
 SetCompassEntity	接口	客户端	设置指南针朝向的实体
 AddUseItemParticleEffect	接口	客户端	在指定位置播放指定物品被开始使用时的粒子效果（如果有）。
 RemoveUseItemParticleEffect	接口	客户端	停止指定位置播放的物品被开始使用时的粒子效果。
+BindItemToMinecraftModel	接口	客户端	将指定物品作为附作物动态挂接到实体原版模型上，在实体原版模型上渲染指定物品。
+BindItemToSkeletonModel	接口	客户端	将指定物品作为附作物动态挂接到实体的网易版骨骼模型，在实体的网易版骨骼模型上指定骨骼渲染指定物品。
+SetBindBoneForBindItem	接口	客户端	改变实体上已绑定的物品附着物所绑定的骨骼，又或者移除该物品附着物。
+GetBindBoneForBindItem	接口	客户端	查询获取实体上已绑定的物品附着物所绑定的骨骼名称。
+SetBindItemRotation	接口	客户端	设置实体上的物品附着物相对骨骼的旋转角度。
+SetBindItemOffset	接口	客户端	设置实体上的物品附着物相对骨骼的位置偏移。
+SetBindItemScale	接口	客户端	设置实体上的物品附着物的缩放比例。
+GetBindItemRotation	接口	客户端	查询获取实体上的物品附着物相对骨骼的旋转角度。
+GetBindItemOffset	接口	客户端	查询获取实体上的物品附着物相对骨骼的位置偏移。
+GetBindItemScale	接口	客户端	查询获取实体上的物品附着物的缩放比例。
 SetName	接口	服务端	用于设置生物的自定义名称，跟原版命名牌作用相同，玩家和新版流浪商人暂不支持
 GetName	接口	服务端	获取生物的自定义名称（即使用命名牌或者SetName接口设置的名称），或者玩家的名字。
 GetName	接口	客户端	获取生物的自定义名称（即使用命名牌或者SetName接口设置的名称），或者玩家的名字。
@@ -1380,6 +1411,17 @@ SetDepthOfFieldBlurRadius	接口	客户端	调整景深效果模糊半径，模�
 SetDepthOfFieldNearBlurScale	接口	客户端	调整景深效果近景模糊大小，近景模糊大小越大，近景的模糊程度越大，反之则越小。注意，近景模糊程度的调节依赖于焦点距离，如果焦点处于较近的距离，那么此时近景处于较清晰的状态，模糊程度大小调节不会很明显。
 SetDepthOfFieldFarBlurScale	接口	客户端	调整景深效果远景模糊大小，远景模糊大小越大，远景的模糊程度越大，反之则越小。注意，远景模糊程度的调节依赖于焦点距离，如果焦点处于较近的距离，那么此时远景处于较清晰的状态，模糊程度大小调节不会很明显。
 SetDepthOfFieldUseCenterFocus	接口	客户端	设置景深效果是否开启屏幕中心聚焦模式，开启后聚焦距离将被自动设置为屏幕中心所对应的物体所在的距离。在第一人称视角下，聚焦距离将被自动设置为屏幕准心所对应的物体与相机的距离，即自动聚焦准心所对应的物体。在第三人称视角下，由于屏幕中心总是对应着玩家，因此聚焦距离将被自动设置为玩家与相机的距离，即自动聚焦在玩家自己。
+AddTouchEventParams	接口	客户端	开启按钮回调功能，不调用该函数则按钮无回调
+AddHoverEventParams	接口	客户端	开启按钮的悬浮回调功能，不调用该函数则按钮无悬浮回调
+SetButtonTouchDownCallback	接口	客户端	设置按钮按下时触发的回调函数
+SetButtonHoverInCallback	接口	客户端	设置鼠标进入按钮时触发的悬浮回调函数
+SetButtonHoverOutCallback	接口	客户端	设置鼠标退出按钮时触发的悬浮回调函数
+SetButtonTouchUpCallback	接口	客户端	设置触控在按钮范围内弹起时的回调函数
+SetButtonTouchCancelCallback	接口	客户端	设置触控在按钮范围外弹起时触发的回调函数
+SetButtonTouchMoveCallback	接口	客户端	设置按下后触控移动时触发的回调函数
+SetButtonTouchMoveInCallback	接口	客户端	设置按下按钮后进入控件时触发的回调函数
+SetButtonTouchMoveOutCallback	接口	客户端	设置按下按钮后退出控件时触发的回调函数
+SetButtonScreenExitCallback	接口	客户端	设置按钮所在画布退出时若鼠标仍未抬起时触发回调函数
 IsPlayerCanFly	接口	服务端	获取玩家能否飞行
 IsPlayerFlying	接口	服务端	获取玩家是否在飞行
 ChangePlayerFlyState	接口	服务端	给予/取消飞行能力, 并根据enterFly参数确定是否进入飞行状态
@@ -1403,9 +1445,9 @@ IsShowName	接口	客户端	获取生物名字是否按照默认游戏逻辑显�
 SetAlwaysShowName	接口	客户端	设置生物名字是否一直显示，瞄准点不指向生物时也能显示
 GetUnitBubbleAirSupply	接口	服务端	单位气泡数对应的氧气储备值
 GetCurrentAirSupply	接口	服务端	生物当前氧气储备值
-GetCurrentAirSupply	接口	客户端	玩家当前氧气储备值
+GetCurrentAirSupply	接口	客户端	生物当前氧气储备值
 GetMaxAirSupply	接口	服务端	获取生物最大氧气储备值
-GetMaxAirSupply	接口	客户端	玩家最大氧气储备值
+GetMaxAirSupply	接口	客户端	生物最大氧气储备值
 SetCurrentAirSupply	接口	服务端	设置生物氧气储备值
 SetMaxAirSupply	接口	服务端	设置生物最大氧气储备值
 IsConsumingAirSupply	接口	服务端	获取生物当前是否在消耗氧气
@@ -1452,6 +1494,7 @@ IsTextShadowEnabled	接口	客户端	判断文本控件是否显示阴影
 HasComponent	接口	服务端	判断实体是否有原版组件
 GetAllComponentsName	接口	服务端	获取实体所拥有的原版组件list
 GetEntitiesBySelector	接口	服务端	传入目标选择器，获取对应实体id (最大范围是所有已加载的实体)
+Resume	接口	客户端	继续播放模型特效（即使用CreateEngineEffectBind创建的特效）
 SetFogColor	接口	客户端	设置雾效颜色
 ResetFogColor	接口	客户端	重置雾效颜色
 GetUseFogColor	接口	客户端	判断当前是否开启设置雾效颜色，该值默认为False，使用mod传入的颜色值后为True
@@ -1523,6 +1566,7 @@ RegisterEntityAOIEvent	接口	服务端	注册感应区域，有实体进入时�
 UnRegisterEntityAOIEvent	接口	服务端	反注册感应区域
 CreateEntityAOI	接口	服务端	注册感应区域，有实体进入时和离开时会触发回调函数func
 DeleteEntityAOI	接口	服务端	删除使用[CreateEntityAOI](#createentityaoi)注册的感应区
+SetUseLocalTime	接口	服务端	让某个维度拥有自己的局部时间规则，开启后该维度可以拥有与其他维度不同的时间与是否昼夜更替的规则
 GetUseLocalTime	接口	服务端	获取某个维度是否设置了使用局部时间规则
 SetLocalTime	接口	服务端	设置使用局部时间规则维度的时间
 SetLocalTimeOfDay	接口	服务端	设置使用局部时间规则维度在一天内所在的时间
@@ -1544,6 +1588,8 @@ SetEmoteSwitch	接口	客户端	设置是否开启表情功能，默认PC端关�
 GetPlayerCurLevelExp	接口	客户端	获取玩家当前等级需要的经验值
 GetRiderId	接口	客户端	获取玩家坐骑entityid
 GetArmorValue	接口	客户端	获取玩家护甲值
+GetEntitiesAroundForClientEntity	接口	客户端	获取区域内的客户端实体列表
+GetEntitiesInSquareAreaForClientEntity	接口	客户端	获取区域内的客户端实体列表
 EnableFontBatchRender	接口	客户端	是否开启字体合批
 SetClipboardContent	接口	客户端	设置系统剪贴板内容
 GetClipboardContent	接口	客户端	获取系统剪贴板内容
@@ -1583,61 +1629,6 @@ SetHoldTimeThreshold	接口	客户端	设置长按判定时间，即按着屏幕
 GetHoldTimeThresholdInMs	接口	客户端	获取长按判定时间，即按着屏幕多长时间会触发长按操作
 SetControlMode	接口	客户端	设置控制模式
 SetControlModeLock	接口	客户端	设置控制模式是否可以被改变
-AddBoxTrigger	接口	服务端	给自定义刚体创建盒子形触发器
-AddCapsuleGeometry	接口	服务端	给自定义刚体创建胶囊形碰撞体
-AddForceAtPos	接口	服务端	对自定义刚体的指定位置添加力，对运动学刚体无效
-AddForceAtPosLocal	接口	服务端	对自定义刚体的指定位置添加力，对运动学刚体无效
-AddSphereGeometry	接口	服务端	给自定义刚体创建球形碰撞体
-AddModifier	接口	服务端	为指定生物增加属性修饰符
-GetAllModifiers	接口	服务端	获取指定生物的某属性所有属性修饰符
-HasModifier	接口	服务端	获取指定生物是否含有属性修饰符
-RemoveModifier	接口	服务端	为指定生物移除属性修饰符
-UpdateModifier	接口	服务端	为指定生物更新属性修饰符
-BindItemToMinecraftModel	接口	客户端	将指定物品作为附作物动态挂接到实体原版模型上，在实体原版模型上渲染指定物品。
-BindItemToSkeletonModel	接口	客户端	将指定物品作为附作物动态挂接到实体的网易版骨骼模型，在实体的网易版骨骼模型上指定骨骼渲染指定物品。
-GetBindBoneForBindItem	接口	客户端	查询获取实体上已绑定的物品附着物所绑定的骨骼名称。
-GetBindItemOffset	接口	客户端	查询获取实体上的物品附着物相对骨骼的位置偏移。
-GetBindItemRotation	接口	客户端	查询获取实体上的物品附着物相对骨骼的旋转角度。
-GetBindItemScale	接口	客户端	查询获取实体上的物品附着物的缩放比例。
-GetCarriedItem	接口	客户端	获取右手物品的信息
-GetPlayerAllItems	接口	客户端	获取玩家指定的槽位的批量物品信息
-GetPlayerAllItems	接口	服务端	获取玩家指定的槽位的批量物品信息
-GetPlayerFishHookEntity	接口	客户端	获取玩家钓鱼时候的鱼漂实体id
-GetPlayerFishHookEntity	接口	服务端	获取玩家钓鱼时候的鱼漂实体id
-GetPlayerFishItem	接口	客户端	获取玩家钓鱼时候的鱼竿物品字典
-GetPlayerFishItem	接口	服务端	获取玩家钓鱼时候的鱼竿物品字典
-GetPlayerItem	接口	客户端	获取玩家物品，支持获取背包，盔甲栏，副手以及主手物品
-GetPlayerItem	接口	服务端	获取玩家物品，支持获取背包，盔甲栏，副手以及主手物品
-SetBindBoneForBindItem	接口	客户端	改变实体上已绑定的物品附着物所绑定的骨骼，又或者移除该物品附着物。
-SetBindItemOffset	接口	客户端	设置实体上的物品附着物相对骨骼的位置偏移。
-SetBindItemRotation	接口	客户端	设置实体上的物品附着物相对骨骼的旋转角度。
-SetBindItemScale	接口	客户端	设置实体上的物品附着物的缩放比例。
-CancelShearsDestroyBlockSpeed	接口	服务端	取消剪刀对某一方块的破坏速度设置
-CancelShearsDestroyBlockSpeedAll	接口	服务端	取消剪刀对全部方块的破坏速度设置
-GetContainerItem	接口	服务端	获取容器内的物品
-GetEnderChestItem	接口	服务端	获取末影箱内的物品
-GetEntityItem	接口	服务端	获取生物物品，支持获取背包，盔甲栏，副手以及主手物品
-SetShearsDestroyBlockSpeed	接口	服务端	设置剪刀对某一方块的破坏速度
-GetFishingLineColor	接口	服务端	获取服务端当前设置的钓鱼线颜色
-GetFishingLineColor	接口	客户端	获取服务端当前设置的钓鱼线颜色
-GetFishingLineMax	接口	服务端	获取服务端当前设置的钓鱼线最大长度
-GetFishingLineMax	接口	客户端	获取服务端当前设置的钓鱼线最大长度
-SetFishingLineColor	接口	服务端	设置钓鱼线的颜色，设置后会自动同步到所有客户端。
-SetFishingLineMax	接口	服务端	设置钓鱼线的最大长度（超过此长度会断线），设置后会自动同步到所有客户端。
-GetQueryableBoneOrientation	接口	客户端	获取实体的原版模型指定骨骼的骨骼矩阵信息。
-ResetEntityExtraSkin	接口	客户端	清除通过 actorRender 接口为实体（包括玩家）额外添加的皮肤渲染组件（几何体、动画、动画控制器、贴图、材质、渲染控制器），还原实体到原始渲染状态。
-HideNeteaseStoreGui	接口	客户端	隐藏游戏中的网易商店按钮。隐藏后点击相应位置不会响应
-OpenNeteaseStoreGui	接口	客户端	打开游戏中的网易商店购买商品界面
-ResetCameraPos	接口	客户端	重置相机位置模式，使相机恢复跟随玩家。用于取消SetCameraPos设置的独立相机位置。
-SetCameraPos	接口	客户端	设置相机中心的位置
-EntityUseItemToPos	接口	服务端	3.8 已废弃：接口已废弃，请使用 UseItemToPos。 旧名称仅保留用于搜索兼容，新开发请使用 UseItemToPos。
-UseItemToEntity	接口	服务端	模拟对某个实体使用物品。
-UseItemToPos	接口	服务端	对某个方块使用指定物品。
-GetPlayerIsFishing	接口	服务端	获取玩家是否在钓鱼
-GetPlayerIsFishing	接口	客户端	获取玩家是否在钓鱼
-PlayerDestroyBlock	接口	服务端	使用手上工具破坏方块
-SetToggleOption	接口	客户端	修改开关型设置的接口
-SetUseLocalTime	接口	服务端	让某个维度拥有自己的局部时间规则，开启后该维度可以拥有与其他维度不同的时间与是否昼夜更替的规则
 PlayerInventoryOpenScriptServerEvent	事件	服务端	某个客户端打开物品背包界面时触发
 ServerSpawnMobEvent	事件	服务端	游戏内自动生成生物，以及使用api生成生物时触发
 ProjectileDoHitEffectEvent	事件	服务端	触发时机：当抛射物碰撞时触发该事件
@@ -1707,6 +1698,8 @@ OnCarriedNewItemChangedServerEvent	事件	服务端	触发时机：玩家切换�
 OnNewArmorExchangeServerEvent	事件	服务端	触发时机：玩家切换盔甲时触发该事件
 ServerPostBlockPatternEvent	事件	服务端	触发时机：用方块组合生成生物，生成生物之后触发该事件。
 ServerItemTryUseEvent	事件	服务端	玩家点击右键尝试使用物品时服务端抛出的事件。
+PlayerRemoveCustomContainerItemServerEvent	事件	服务端	玩家从自定义容器中移除物品成功后触发该事件。该事件不可取消，仅用于通知物品移除操作已完成。
+PlayerAddCustomContainerItemServerEvent	事件	服务端	玩家向自定义容器中添加物品成功后触发该事件。该事件不可取消，仅用于通知物品添加操作已完成。
 ServerItemUseOnEvent	事件	服务端	玩家在对方块使用物品之前服务端抛出的事件。
 ItemUseOnAfterServerEvent	事件	服务端	玩家在对方块使用物品之后服务端抛出的事件。
 ShearsUseToBlockBeforeServerEvent	事件	服务端	触发时机：实体手持剪刀对方块使用时，有剪刀特殊效果的方块会在服务端线程触发该事件
@@ -1810,12 +1803,11 @@ PlayerTryRemoveCustomContainerItemServerEvent	事件	服务端	玩家尝试从�
 PlayerPermissionChangeServerEvent	事件	服务端	玩家权限变更事件
 ItemPushInCustomContainerServerEvent	事件	服务端	漏斗漏入物品时触发该事件
 ItemPullOutCustomContainerServerEvent	事件	服务端	漏出物品到漏斗时触发该事件
+PhysxTouchServerEvent	事件	服务端	给自定义刚体添加的碰撞体，与其他碰撞体或原版实体发生碰撞/结束碰撞时触发。需要在碰撞体创建时使用PxEventMask.Server才会触发
 LiquidClippedServerEvent	事件	服务端	玩家服务端点击流体时触发（支持原版流体与自定义流体）
 PhysxTriggerServerEvent	事件	服务端	给自定义刚体添加的触发器，与其他碰撞体或原版实体发生进入触发器/离开触发器时触发。需要在触发器创建时使用PxEventMask.Server才会触发
-PlayerAddCustomContainerItemServerEvent	事件	服务端	玩家向自定义容器中添加物品成功后触发该事件。该事件不可取消，仅用于通知物品添加操作已完成。
-PlayerFishingAfterServerEvent	事件	服务端	玩家钓鱼成功收杆后触发，在钓鱼掉落物生成后触发
 PlayerFishingServerEvent	事件	服务端	玩家钓鱼成功收杆时触发，在钓鱼掉落物生成前触发
-PlayerRemoveCustomContainerItemServerEvent	事件	服务端	玩家从自定义容器中移除物品成功后触发该事件。该事件不可取消，仅用于通知物品移除操作已完成。
+PlayerFishingAfterServerEvent	事件	服务端	玩家钓鱼成功收杆后触发，在钓鱼掉落物生成后触发
 PlayerStartFishingServerEvent	事件	服务端	玩家开始钓鱼，生成鱼钩时在服务端触发
 ClientShapedRecipeTriggeredEvent	事件	客户端	玩家合成物品时触发
 StepOnBlockClientEvent	事件	客户端	触发时机：实体刚移动至一个新实心方块时触发。
@@ -1859,7 +1851,7 @@ TapOrHoldReleaseClientEvent	事件	客户端	玩家点击屏幕后松手时触�
 LeftClickBeforeClientEvent	事件	客户端	玩家按下攻击/摧毁键时触发，例如鼠标左键、新触控攻击键、手柄右扳机键。鼠标左键仅在pc的普通控制模式（即非F11模式）下触发
 LeftClickReleaseClientEvent	事件	客户端	玩家松开攻击/摧毁键时触发，例如鼠标左键、新触控攻击键、手柄右扳机键。鼠标左键仅在pc的普通控制模式（即非F11模式）下触发
 RightClickBeforeClientEvent	事件	客户端	玩家按下使用物品/放置方块键时触发，例如鼠标右键、新触控交互键、手柄左扳机键
-RightClickReleaseClientEvent	事件	客户端	玩家松开使用物品/放置方块键时触发，例如鼠标右键、新触控交互键、手柄左扳机键
+RightClickReleaseClientEvent	事件	客户端	玩家松开使用物品/放置方块键时触发，例如鼠标右键、手柄左扳机键
 OnBackButtonReleaseClientEvent	事件	客户端	返回按钮（目前特指安卓系统导航中的返回按钮）松开时触发
 MouseWheelClientEvent	事件	客户端	鼠标滚轮滚动时触发
 OnGamepadKeyPressClientEvent	事件	客户端	游戏手柄按键事件
@@ -1926,10 +1918,15 @@ PlayerTryPutCustomContainerItemClientEvent	事件	客户端	玩家尝试将物�
 PlayerTryAddCustomContainerItemClientEvent	事件	客户端	玩家尝试将物品添加到自定义容器时触发该事件
 PlayerTryRemoveCustomContainerItemClientEvent	事件	客户端	玩家尝试从自定义容器中移除物品时触发该事件
 UpdatePlayerSkinClientEvent	事件	客户端	触发时机：玩家加入游戏或通过更衣室局内换肤后 同步皮肤信息至客户端后触发
+OnCustomKeyPressInGame	事件	客户端	当玩家按下自定义按键时触发
+OnCustomKeyChangedEvent	事件	客户端	当自定义按键绑定发生改变时触发
+OnCustomGamepadPressInGame	事件	客户端	当玩家按下自定义手柄按键时触发
+OnCustomGamepadChangedEvent	事件	客户端	当自定义手柄按键绑定发生改变时触发
+PhysxTouchClientEvent	事件	客户端	给自定义刚体添加的碰撞体，与其他碰撞体或原版实体发生碰撞/结束碰撞时触发。需要在碰撞体创建时使用PxEventMask.Client才会触发
 LiquidClippedClientEvent	事件	客户端	玩家客户端点击流体时触发（支持原版流体与自定义流体）
-PhysxTriggerClientEvent	事件	客户端	给自定义刚体添加的触发器，与其他碰撞体或原版实体进入/离开触发器时触发。需要在触发器创建时使用PxEventMask.Client才会触发
 PlayerAddCustomContainerItemClientEvent	事件	客户端	玩家成功将物品添加到自定义容器时触发该事件
 PlayerRemoveCustomContainerItemClientEvent	事件	客户端	玩家成功从自定义容器中移除物品时触发该事件
+PhysxTriggerClientEvent	事件	客户端	给自定义刚体添加的触发器，与其他碰撞体或原版实体进入/离开触发器时触发。需要在触发器创建时使用PxEventMask.Client才会触发
 ActorDamageCause	枚举		描述实体伤害来源枚举值，及实体被伤害的原因。
 AniCheatBlockBreak	枚举		反作弊配置枚举值，破坏方块相关
 AniCheatConsts	枚举		反作弊配置开关宏定义

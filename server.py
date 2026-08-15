@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """ModSDK MCP 服务器（极简版）。
 
-七个工具：
+八个工具：
   - get_api_detail(name)：按名称查接口/事件/枚举值的完整详情
   - search_api(pattern)：正则搜索 API/事件/枚举索引（grep 式）
   - search_identifier(pattern)：正则搜索基岩版方块/物品/实体/状态效果/附魔 ID
   - execute_code(code, side)：在游戏内 DebugBridge mod 执行 Python 代码（py2.7）
-  - listen_event(event_name, side, ...)：注册事件监听器，捕获 args 字典
+  - listen_event(event_name, side, ...)：注册事件监听器，捕获 args 字典（支持同时监听多个事件）
   - get_event_log()：读取 listen_event 回调代码中 print 内容
+  - unlisten_event(event_name, side, ...)：取消 listen_event 注册的监听器，不传 event_name 取消该端全部
   - hot_reload(side, pkg, modules)：改完 .py 后热重载，封装 hot_reload.py
 
 前三个工具仅依赖 data/ 下的预编译索引；execute_code/listen_event/get_event_log
@@ -15,13 +16,16 @@
 hot_reload 通过 subprocess 调 py2 脚本（D:/mod-debug-bridge/scripts/hot_reload.py）。
 """
 import asyncio
+import ctypes
 import json
 import os
 import re
 import socket
 import subprocess
 import sys
+import tempfile
 import textwrap
+import time
 from pathlib import Path
 
 from mcp.server import Server
@@ -162,6 +166,35 @@ async def list_tools():
             inputSchema={"type": "object", "properties": {}, "required": []},
         ),
         Tool(
+            name="unlisten_event",
+            description="取消listen_event注册的事件监听器，防止log爆炸或残留监听。不传event_name时取消该端全部监听器。",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "event_name": {
+                        "type": "string",
+                        "description": "要取消的事件名，须与listen_event时的namespace/system_name匹配，不传则取消该端全部",
+                    },
+                    "side": {
+                        "type": "string",
+                        "enum": ["client", "server"],
+                        "description": "在客户端还是服务端取消",
+                    },
+                    "namespace": {
+                        "type": "string",
+                        "description": "事件命名空间，取消模组自定义事件监听才需要改",
+                        "default": "Minecraft",
+                    },
+                    "system_name": {
+                        "type": "string",
+                        "description": "事件system名，取消模组自定义事件监听才需要改",
+                        "default": "Engine",
+                    },
+                },
+                "required": ["side"],
+            },
+        ),
+        Tool(
             name="hot_reload",
             description="改完mod的.py文件后热重载，免重启游戏。",
             inputSchema={
@@ -188,6 +221,10 @@ async def list_tools():
         ),
     ]
 
+def _tool_error(text):
+    """构造 isError=True 的工具错误返回（连接失败/脚本缺失等，区别于代码报错）。"""
+    return CallToolResult(content=[TextContent(type="text", text=text)], isError=True)
+
 def _search(arguments, lines):
     """正则搜索 + 可选类型过滤。带 entry_type 时去掉类型列（AI 已知类型）。"""
     pattern = arguments.get("pattern", "")
@@ -206,9 +243,8 @@ def _search(arguments, lines):
     # 带 entry_type 时去掉类型列（第 2 列），保留其余列
     if entry_type:
         matched = ["\t".join(p for i, p in enumerate(line.split("\t")) if i != 1) for line in matched]
-    truncated = len(matched) > SEARCH_LIMIT
     result = "\n".join(matched[:SEARCH_LIMIT])
-    if truncated:
+    if len(matched) > SEARCH_LIMIT:
         result += "\n\n...（共{}条匹配，仅显示前{}条，请用更精确的正则缩小范围）".format(
             len(matched), SEARCH_LIMIT)
     return [TextContent(type="text", text=result)]
@@ -220,7 +256,6 @@ def _exec_with_retry(code, side):
       - 代码报错：     (False, stderr, False)  ← 代码错不算工具错
       - 连接彻底失败： (False, 诊断文案, True)
     """
-    import time
     port = db.CLIENT_PORT if side == "client" else db.SERVER_PORT
     exec_func = db.exec_client if side == "client" else db.exec_server
     # 重试：上次连接的 _cli 要等 mod 端 tick 推进到 _recv 返回空才清除，
@@ -271,21 +306,30 @@ def _diagnose_connection_failure(port):
 def _build_listen_code(namespace, systemName, eventName, side, callback_code):
     """构造 mod 端注册事件监听器的代码。
 
-    两处关键设计：
+    三处关键设计：
     1. 引擎日志隔离：RegisterEngineHandler 等日志走 Python stdout，会被 ExecListener
        的 buf 捕获混入回传。注册期间临时把 sys.stdout 切回真实 stdout（sys.__stdout__），
        让引擎日志进游戏日志而非 MCP 回传。
     2. callback 捕获：handler 内部把 callback_code 的 print 重定向到 StringIO，
        直接入队（默认 print args → 每条即 args）。get_event_log 拿到 callback 输出。
+    3. 多监听：state 存进 __main__._db_event_states（dict，key 为
+       "namespace:systemName:eventName"），只有同 key 重复注册才替换旧监听，
+       不同事件互不影响——支持同时监听多个事件做时序分析。
     """
-    callback_body = textwrap.indent(callback_code, "        ")
     return """\
 import __main__, sys, StringIO, codecs, traceback
 from collections import deque
 from common.eventUtil import instance as event
 
-prev = getattr(__main__, "_db_event_state", None)
+_states = getattr(__main__, "_db_event_states", None)
+if _states is None:
+    _states = {}
+    __main__._db_event_states = _states
+
+_key = %(namespace)r + ":" + %(systemName)r + ":" + %(eventName)r
+prev = _states.get(_key)
 if prev is not None:
+    # 只顶掉同 key 的旧监听：同事件重复注册仍替换，其他事件的监听不受影响
     try:
         if prev["side"] == "client":
             event.UnListenForEventClient(prev["namespace"], prev["systemName"], prev["eventName"], prev["instance"], prev["handler"])
@@ -312,8 +356,7 @@ def _db_event_handler(args):
     state["queue"].append(_extra)
 
 state["handler"] = _db_event_handler
-__main__._db_event_state = state
-__main__._db_event_handler = _db_event_handler  # 防 GC
+_states[_key] = state  # handler 存进 state、state 进 __main__ 上的全局 dict，即防 handler 被 GC
 
 # 注册期间把 stdout 切回真实 stdout：RegisterEngineHandler 等引擎日志走 Python stdout，
 # 否则会污染本次 exec 的回传 buf。注册后立即恢复。
@@ -334,17 +377,59 @@ if %(namespace)r == "Minecraft" and %(systemName)r == "Engine":
     _eventID = %(namespace)r + ":" + %(systemName)r + ":" + %(eventName)r
     if _sys.eventBus.GetEngineEventID(_eventID) is None:
         print "FAIL undefined engine event: " + _eventID
+        # 引擎层没注册成功，从 states 撤掉，避免留下永不触发的空监听器
+        _states.pop(_key, None)
     else:
         print "OK listening"
 else:
     print "OK listening"
+# 附当前活跃监听器数量与清单，便于确认多监听生效
+print "active listeners (%%d): %%s" %% (len(_states), ", ".join(sorted(_states)))
 """ % {
         "namespace": namespace,
         "systemName": systemName,
         "eventName": eventName,
         "side": side,
-        "callback_body": callback_body,
+        "callback_body": textwrap.indent(callback_code, "        "),
     }
+
+
+def _build_unlisten_code(namespace, systemName, eventName, side):
+    """构造 mod 端取消事件监听器的 py2 代码。eventName 为 None 时取消该端全部。
+
+    输出协议（py3 侧解析）：NO_LISTENERS（无任何监听器）/ CANCELLED n（取消数）/
+    REMAINING m（剩余数）。UnListen 抛异常也照样从 _db_event_states 删条目，
+    避免留下删不掉的死条目，只是不计入取消数。
+    """
+    # 传了 event_name 才定位到具体 key，否则 None 代表全部
+    target = '"{}:{}:{}"'.format(namespace, systemName, eventName) if eventName else "None"
+    return """\
+import __main__
+from common.eventUtil import instance as event
+
+_states = getattr(__main__, "_db_event_states", None)
+if not _states:
+    print "NO_LISTENERS"
+else:
+    _target = %(target)s
+    _keys = sorted(_states) if _target is None else [k for k in sorted(_states) if k == _target]
+    _count = 0
+    for k in _keys:
+        st = _states[k]
+        try:
+            # 与注册对称：side/instance/handler 都从 state 里取
+            if st["side"] == "client":
+                event.UnListenForEventClient(st["namespace"], st["systemName"], st["eventName"], st["instance"], st["handler"])
+            else:
+                event.UnListenForEventServer(st["namespace"], st["systemName"], st["eventName"], st["instance"], st["handler"])
+            _count += 1
+        except Exception as e:
+            print "UnListen " + k + " failed: " + str(e)
+        del _states[k]
+    print "CANCELLED " + str(_count)
+    if _states:
+        print "REMAINING " + str(len(_states))
+""" % {"target": target}
 
 
 @server.call_tool()
@@ -376,7 +461,7 @@ async def call_tool(name, arguments):
         side = arguments.get("side", "server")
         success, payload, is_tool_error = _exec_with_retry(code, side)
         if is_tool_error:
-            return CallToolResult(content=[TextContent(type="text", text=payload)], isError=True)
+            return _tool_error(payload)
         if success:
             text = payload if payload.strip() else "执行成功，无输出"
             return [TextContent(type="text", text=text)]
@@ -394,27 +479,30 @@ async def call_tool(name, arguments):
         listen_code = _build_listen_code(namespace, system_name, event_name, side, callback_code)
         success, payload, is_tool_error = _exec_with_retry(listen_code, side)
         if is_tool_error:
-            return CallToolResult(content=[TextContent(type="text", text=payload)], isError=True)
+            return _tool_error(payload)
         if success:
             text = payload.strip() or "执行成功，无输出"
             # 引擎层面判定未定义事件——算工具错（不是代码错），AI 能立即纠正事件名。
             if "FAIL undefined engine event" in text:
-                return CallToolResult(content=[TextContent(type="text",
-                text="未定义的引擎事件：{}。事件名拼写错误、不存在，或该事件不在{}端".format(event_name, side))], isError=True)
+                return _tool_error("未定义的引擎事件：{}。事件名拼写错误、不存在，或该事件不在{}端"
+                                   .format(event_name, side))
             return [TextContent(type="text", text=text)]
         return [TextContent(type="text", text=payload[:4000])]
 
     elif name == "get_event_log":
-        # 读 __main__._db_event_state.queue（每条是 callback 的 print 输出），换行 join 返回。
-        # 不知道当前 side，两端都试一遍——listen_event 注册的端会有 state，另一端会拿到 AttributeError。
+        # 遍历 __main__._db_event_states（多监听），每个监听器输出一段：标注行 + queue 内容。
+        # 空段也输出标注行，让用户看到监听器存在但没触发。
+        # 不知道当前 side，两端都试一遍——listen_event 注册的端会有 states，另一端会拿到 NOT_REGISTERED。
         for side in ("server", "client"):
             success, payload, is_tool_error = _exec_with_retry(
                 'import __main__\n'
-                'st = getattr(__main__, "_db_event_state", None)\n'
-                'if st is None:\n'
+                'st = getattr(__main__, "_db_event_states", None)\n'
+                'if not st:\n'
                 '    print "NOT_REGISTERED"\n'
                 'else:\n'
-                '    print chr(10).join(list(st["queue"]))\n',
+                '    for k in sorted(st):\n'
+                '        print "=== " + k + " ==="\n'
+                '        print chr(10).join(list(st[k]["queue"]))\n',
                 side,
             )
             if is_tool_error:
@@ -427,6 +515,31 @@ async def call_tool(name, arguments):
                 continue
             return [TextContent(type="text", text=text if text else "(no events captured yet)")]
         return [TextContent(type="text", text="未注册任何事件监听器，请先调用listen_event")]
+
+    elif name == "unlisten_event":
+        event_name = arguments.get("event_name") or ""
+        side = arguments.get("side", "server")
+        namespace = arguments.get("namespace") or "Minecraft"
+        system_name = arguments.get("system_name") or "Engine"
+        unlisten_code = _build_unlisten_code(namespace, system_name, event_name or None, side)
+        success, payload, is_tool_error = _exec_with_retry(unlisten_code, side)
+        if is_tool_error:
+            return _tool_error(payload)
+        if success:
+            text = payload.strip()
+            if "NO_LISTENERS" in text:
+                return [TextContent(type="text", text="该端没有注册任何事件监听器")]
+            cancelled = re.search(r"CANCELLED (\d+)", text)
+            count = int(cancelled.group(1)) if cancelled else 0
+            if not count:
+                # 没匹配到可取消的监听器不算工具错误，提示用户检查事件名
+                return [TextContent(type="text", text="未找到事件{}的监听器".format(event_name))]
+            message = "已取消{}个监听器".format(count)
+            remaining = re.search(r"REMAINING (\d+)", text)
+            if remaining:
+                message += "，剩余{}个".format(remaining.group(1))
+            return [TextContent(type="text", text=message)]
+        return [TextContent(type="text", text=payload[:4000])]
 
     elif name == "hot_reload":
         side = arguments.get("side", "both")
@@ -443,17 +556,11 @@ async def call_tool(name, arguments):
                 probe.close()
             except (socket.error, socket.timeout):
                 probe.close()
-                return CallToolResult(
-                    content=[TextContent(type="text", text=_diagnose_connection_failure(port))],
-                    isError=True,
-                )
+                return _tool_error(_diagnose_connection_failure(port))
         # hot_reload.py 跟 server.py 同项目，相对路径找
         script = BASE_DIR / "tools" / "hot_reload.py"
         if not script.is_file():
-            return CallToolResult(
-                content=[TextContent(type="text", text="hot_reload.py脚本未找到：{}".format(script))],
-                isError=True,
-            )
+            return _tool_error("hot_reload.py脚本未找到：{}".format(script))
         cmd = [r"C:\Python27\python.exe", "-B", str(script)]
         if side == "client":
             cmd.append("--client")
@@ -470,13 +577,18 @@ async def call_tool(name, arguments):
             # 本进程的 stdio 被 mcp.server.stdio_server 接管（asyncio），子进程继承
             # stdout/stderr 句柄后 Popen.communicate 卡 30s（PIPE 读不到 EOF）。
             # 改为输出重定向到临时文件，wait 完再读，绕开管道通信。0.08s 正常返回。
-            import tempfile
             with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as _out_f, \
                  tempfile.NamedTemporaryFile(mode='w+b', delete=False) as _err_f:
                 _out_path, _err_path = _out_f.name, _err_f.name
             with open(_out_path, 'w') as _o, open(_err_path, 'w') as _e:
                 _proc = subprocess.Popen(cmd, stdout=_o, stderr=_e, stdin=subprocess.DEVNULL)
-                _proc.wait()
+                try:
+                    _proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    # 不 kill 会残留孤儿 py2 进程继续占用游戏端口，干扰下次重试
+                    _proc.kill()
+                    _proc.wait()
+                    raise
             with open(_out_path, 'rb') as _f:
                 _out = _f.read().decode('gbk', 'replace')
             with open(_err_path, 'rb') as _f:
@@ -486,22 +598,14 @@ async def call_tool(name, arguments):
                     os.remove(_p)
                 except OSError:
                     pass
-            r = subprocess.CompletedProcess(args=cmd, returncode=_proc.returncode,
-                                            stdout=_out, stderr=_err)
         except subprocess.TimeoutExpired:
-            return CallToolResult(
-                content=[TextContent(type="text", text="hot_reload执行超时（>120s）")],
-                isError=True,
-            )
+            return _tool_error("hot_reload执行超时（>5s），多半是游戏处于后台tick暂停导致连接卡死，请把游戏窗口切回前台再试")
         except Exception as e:
-            return CallToolResult(
-                content=[TextContent(type="text", text="hot_reload执行失败：{}".format(e))],
-                isError=True,
-            )
+            return _tool_error("hot_reload执行失败：{}".format(e))
         # 脚本退出码非 0（有 failure）不算工具错——跟 execute_code 语义一致
-        text = r.stdout or ""
-        if r.stderr:
-            text = (text + "\n---stderr---\n" + r.stderr) if text else r.stderr
+        text = _out or ""
+        if _err:
+            text = (text + "\n---stderr---\n" + _err) if text else _err
         return [TextContent(type="text", text=text.strip() or "执行成功，无输出")]
 
     return [TextContent(type="text", text="未知工具：{}".format(name))]
@@ -512,14 +616,12 @@ def _kill_stale_instance():
     ZCode 重启 MCP 时只 spawn 新进程、不关旧 stdin，导致旧 server 残留。
     本函数读 pid 锁文件，若上个进程还活着就 taskkill 干掉，再写自己的 pid。
     """
-    import os
     lock = BASE_DIR / "server.pid"
     if lock.is_file():
         try:
             old_pid = int(lock.read_text(encoding="utf-8").strip())
             if old_pid != os.getpid():
                 # 探测旧进程是否还活着
-                import ctypes
                 kernel32 = ctypes.windll.kernel32
                 handle = kernel32.OpenProcess(0x1000, False, old_pid)  # PROCESS_QUERY_LIMITED_INFORMATION
                 if handle:
@@ -540,8 +642,6 @@ async def _watch_parent_task():
     兜底 ZCode 异常退出不关闭 stdin 管道导致 server 进程残留的问题。
     正常情况下 stdin 关闭会让 server.run() 自然返回，此任务不介入。
     """
-    import os
-    import ctypes
     kernel32 = ctypes.windll.kernel32
     parent_pid = os.getppid()
     while True:
