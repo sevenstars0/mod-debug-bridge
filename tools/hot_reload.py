@@ -81,6 +81,16 @@
     的模块时，必须客户端 (14530) 和服务端 (14531) 各调一次 dbreload。本脚本默认双端
     都调；改单端专属文件时加 --client / --server 节省时间。
 
+【坑 9】单端专属模块不能进对侧域 reload（_module_side 按归属端过滤）
+    单机版两个脚本域共享 sys.modules 里的模块对象：客户端模块曾被双端各 reload 一
+    次，服务端域那次 reload 在服务端调用栈重新执行模块顶层，clientApi.GetLocalPlayer
+    Id() 在服务端域没有"本地玩家"概念返回 '-1'，把共享模块的模块级常量 PID 覆盖成
+    '-1'，客户端随后 NotifyToServer 发的 id 全部无效（组件创建失败、区域查询返回空），
+    表现为模组功能莫名失效且无任何报错。dbreload 首次 import 分支也会把客户端模块
+    常驻进服务端域 sys.modules，是这一污染的入口。修复：_module_side 读文件头部
+    import（client.extraClientApi / server.extraServerApi）判定归属端，reload_modules
+    只在归属端执行；双端共用模块（无专属 import 或两头都 import）仍双端。
+
 【坑 8】游戏处于后台时，DebugBridge 连接会卡死
     DebugBridge 的 ExecListener.update() 挂在 system 的 Update() tick 里驱动——游戏
     切到后台（窗口最小化 / 失焦 / 切到其他应用）时客户端 tick 暂停，socket 收不到新
@@ -109,6 +119,26 @@ STATE_FILE = os.path.join(HERE, '.hot_reload_state.json')
 #   <mods_root>/<pkg_name>/<xxx>System.py
 # 不传参时自动从服务端 sys.modules 找 behavior_packs 下的顶层包推断。
 DEFAULT_MODS_ROOT = None
+
+
+def _module_side(abs_path):
+    """读模块文件头部 import 判定归属端。
+    单机版两个脚本域共享 sys.modules 的模块对象：客户端模块（import client.extraClientApi）
+    若被发到服务端域 reload，顶层在服务端域调用栈重新执行，GetLocalPlayerId() 等域敏感
+    API 返回无效值（'-1'），会污染共享模块的常量（PID 等），客户端随之读 到坏值。
+    返回 ('client',)/('server',)/('client', 'server')。读不到文件时保守双端。"""
+    try:
+        with open(abs_path, 'rb') as f:
+            head = f.read(4096)
+    except IOError:
+        return ('client', 'server')
+    has_client = 'client.extraClientApi' in head
+    has_server = 'server.extraServerApi' in head
+    if has_client and not has_server:
+        return ('client',)
+    if has_server and not has_client:
+        return ('server',)
+    return ('client', 'server')
 
 
 def _discover_mod_roots(prefer_pkg=None):
@@ -229,7 +259,8 @@ def _save_state(state):
 
 
 def _scan_mods(mods_root, old_state, new_state):
-    """扫 mods_root 下所有 .py 文件，把 mtime 写入 new_state，返回改过的 module_name 列表。
+    """扫 mods_root 下所有 .py 文件，把 mtime 写入 new_state，返回改过的模块列表。
+    每项为 (module_name, sides)：sides 是该模块的归属端，reload 时据此跳过对侧域。
     old_state/new_state 由调用方维护，支持多 mod 包共用同一份状态。"""
     changed = []
     for abs_path, module_name in _walk_py_files(mods_root):
@@ -239,12 +270,12 @@ def _scan_mods(mods_root, old_state, new_state):
             continue
         new_state[abs_path] = mtime
         if old_state.get(abs_path) != mtime:
-            changed.append(module_name)
+            changed.append((module_name, _module_side(abs_path)))
     return changed
 
 
 def _find_changed_modules(mods_root):
-    """单 mod 包场景：扫 mods_root 所有 .py，与状态文件对比，返回改过的 module_name 列表。
+    """单 mod 包场景：扫 mods_root 所有 .py，与状态文件对比，返回 [(module_name, sides), ...]。
     首次调用（状态文件不存在）从 mod 端取启动时扫描的基线作为对比基准。"""
     old_state = _load_state()
     if not old_state:
@@ -257,6 +288,7 @@ def _find_changed_modules(mods_root):
 
 def _find_changed_modules_multi(mods_roots):
     """多 mod 包场景：扫所有 mods_root，共享一份状态文件。
+    返回 [(module_name, sides), ...]，sides 为模块归属端（见 _module_side）。
     mods_roots: [mods_root, ...]
     首次调用（状态文件不存在）从 mod 端取启动时扫描的基线作为对比基准，
     这样用户改完代码第一次调用就能 reload（不需要"先建基线"的两步流程）。"""
@@ -300,8 +332,12 @@ def _dbreload_one_side(exec_func, label, module_name, retries=2):
     return False, '%s: retries exhausted (%s)' % (label, last_err)
 
 
-def reload_modules(module_names, sides=('client', 'server')):
-    """对指定模块列表，在指定端各调一次 dbreload。"""
+def reload_modules(module_entries, sides=('client', 'server')):
+    """对指定模块列表，在各模块的归属端调 dbreload。
+    module_entries: [(module_name, allowed_sides), ...]——客户端模块只在 client 域、
+    服务端模块只在 server 域重载，防止对侧域 reload 执行顶层时污染共享模块的
+    域敏感常量（详见 _module_side）；双端共用模块双端都重载。
+    sides 是整体开关（--client/--server 命令行参数）。"""
     exec_funcs = []
     if 'client' in sides:
         exec_funcs.append((db.exec_client, 'client'))
@@ -309,9 +345,11 @@ def reload_modules(module_names, sides=('client', 'server')):
         exec_funcs.append((db.exec_server, 'server'))
 
     results = []   # [(module_name, [(ok, info), ...]), ...]
-    for name in module_names:
+    for name, allowed in module_entries:
         per_side = []
         for exec_func, label in exec_funcs:
+            if label not in allowed:
+                continue
             ok, info = _dbreload_one_side(exec_func, label, name)
             per_side.append((ok, info))
         results.append((name, per_side))
@@ -351,7 +389,8 @@ def main(argv):
 
     # 确定要重载的模块
     if explicit_modules:
-        modules = explicit_modules
+        # 显式传模块名时不做磁盘归属判定，保守双端（同旧行为）；确知单端时加 --client/--server
+        modules = [(name, ('client', 'server')) for name in explicit_modules]
     else:
         # 自动扫改动：找所有用户的 mod 包，共享一份状态
         if DEFAULT_MODS_ROOT:
