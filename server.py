@@ -306,7 +306,7 @@ def _diagnose_connection_failure(port):
 def _build_listen_code(namespace, systemName, eventName, side, callback_code):
     """构造 mod 端注册事件监听器的代码。
 
-    三处关键设计：
+    四处关键设计：
     1. 引擎日志隔离：RegisterEngineHandler 等日志走 Python stdout，会被 ExecListener
        的 buf 捕获混入回传。注册期间临时把 sys.stdout 切回真实 stdout（sys.__stdout__），
        让引擎日志进游戏日志而非 MCP 回传。
@@ -315,7 +315,14 @@ def _build_listen_code(namespace, systemName, eventName, side, callback_code):
     3. 多监听：state 存进 __main__._db_event_states（dict，key 为
        "namespace:systemName:eventName"），只有同 key 重复注册才替换旧监听，
        不同事件互不影响——支持同时监听多个事件做时序分析。
+    4. handler 挂 __main__：引擎 EventHandler 只存函数名，触发时
+       getattr(instance, funcName) 取回调，所以 handler 必须以每 key 唯一的
+       名字 setattr 到注册用的 instance（__main__）上；exec globals 是所有
+       exec 共享的 serverSystem 模块 dict，state 用默认参数绑进 handler，
+       防止后注册的监听器顶掉全局 state 导致日志串台。
     """
+    # handler 名每 key 唯一：多个监听器并存时 getattr(__main__, funcName) 各取各的
+    handler_name = "_db_handler_" + re.sub(r"\W", "_", "%s_%s_%s" % (namespace, systemName, eventName))
     return """\
 import __main__, sys, StringIO, codecs, traceback
 from collections import deque
@@ -340,7 +347,7 @@ if prev is not None:
 
 state = {"namespace": %(namespace)r, "systemName": %(systemName)r, "eventName": %(eventName)r, "side": %(side)r, "queue": deque(maxlen=10), "handler": None, "instance": __main__}
 
-def _db_event_handler(args):
+def %(handler_name)s(args, state=state):
     # 用 utf-8 writer 包装 StringIO：引擎事件分发同栈里 logging 会写 unicode 日志，
     # 裸 StringIO 只收 str，写 unicode 会抛 IOError [Errno 0]。包装后自动编码成 utf-8。
     _buf = codecs.getwriter('utf-8')(StringIO.StringIO())
@@ -355,7 +362,8 @@ def _db_event_handler(args):
     _extra = _buf.getvalue().rstrip()
     state["queue"].append(_extra)
 
-state["handler"] = _db_event_handler
+state["handler"] = %(handler_name)s
+setattr(__main__, %(handler_name)r, %(handler_name)s)  # 引擎触发时按名字在 instance 上 getattr 回调
 _states[_key] = state  # handler 存进 state、state 进 __main__ 上的全局 dict，即防 handler 被 GC
 
 # 注册期间把 stdout 切回真实 stdout：RegisterEngineHandler 等引擎日志走 Python stdout，
@@ -364,10 +372,10 @@ _outer_stdout = sys.stdout
 sys.stdout = sys.__stdout__ if sys.__stdout__ else _outer_stdout
 try:
     if %(side)r == "client":
-        event.ListenForEventClient(%(namespace)r, %(systemName)r, %(eventName)r, __main__, _db_event_handler)
+        event.ListenForEventClient(%(namespace)r, %(systemName)r, %(eventName)r, __main__, %(handler_name)s)
         from common.system.systemRegister import client as _sys
     else:
-        event.ListenForEventServer(%(namespace)r, %(systemName)r, %(eventName)r, __main__, _db_event_handler)
+        event.ListenForEventServer(%(namespace)r, %(systemName)r, %(eventName)r, __main__, %(handler_name)s)
         from common.system.systemRegister import server as _sys
 finally:
     sys.stdout = _outer_stdout
@@ -390,6 +398,7 @@ print "active listeners (%%d): %%s" %% (len(_states), ", ".join(sorted(_states))
         "systemName": systemName,
         "eventName": eventName,
         "side": side,
+        "handler_name": handler_name,
         "callback_body": textwrap.indent(callback_code, "        "),
     }
 
