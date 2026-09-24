@@ -359,7 +359,8 @@ def reload_modules(module_entries, sides=('client', 'server')):
 def _format_results(results):
     lines = []
     for name, per_side in results:
-        statuses = ' '.join('[%s]' % ('OK' if ok else 'FAIL') for ok, _ in per_side)
+        # per_side 为空 = 该模块不属于任何请求端（如客户端模块跑 --server），标记 SKIP
+        statuses = ' '.join('[%s]' % ('OK' if ok else 'FAIL') for ok, _ in per_side) or '[SKIP]'
         lines.append('%s %s' % (statuses, name))
         for ok, info in per_side:
             if not ok:
