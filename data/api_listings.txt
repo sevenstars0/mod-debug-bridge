@@ -79,10 +79,12 @@ GetBlockEntityData	接口	客户端	用于获取客户端当前维度中方块�
 GetBlockEntityData	接口	服务端	用于获取方块（包括自定义方块）的数据，如需修改，请使用setblockentitydata接口
 GetRot	接口	客户端	获取实体头与水平方向的俯仰角度和竖直方向的旋转角度，获得角度后可用GetDirFromRot接口转换为朝向的单位向量 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
 GetRot	接口	客户端	获取序列帧特效的旋转角度
+GetRot	接口	客户端	获取粒子发射器局部旋转
 GetRot	接口	服务端	获取实体头与水平方向的俯仰角度和竖直方向的旋转角度，获得角度后可用GetDirFromRot接口转换为朝向的单位向量 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
 GetRot	接口	客户端	获取粒子发射器的旋转角度
 SetRot	接口	客户端	设置实体头与水平方向的俯仰角度和竖直方向的旋转角度 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
 SetRot	接口	客户端	设置序列帧的旋转
+SetRot	接口	客户端	设置粒子发射器局部旋转
 SetRot	接口	服务端	设置实体头与水平方向的俯仰角度和竖直方向的旋转角度 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
 SetRotForClientEntity	接口	客户端	设置客户端实体头与水平方向的俯仰角度和竖直方向的旋转角度 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
 GetBodyRot	接口	客户端	获取实体的身体的角度
@@ -130,6 +132,7 @@ HasEffect	接口	服务端	获取实体是否存在当前状态效果
 GetPos	接口	客户端	获取实体位置
 GetPos	接口	客户端	获取序列帧特效的位置
 GetPos	接口	服务端	获取实体位置
+GetPos	接口	客户端	获取粒子发射器位置
 GetPos	接口	客户端	获取Shape的位置
 GetPos	接口	客户端	获取粒子发射器的世界坐标位置
 GetFootPos	接口	客户端	获取实体脚所在的位置
@@ -181,6 +184,7 @@ GetOwnerId	接口	客户端	获取驯服生物的主人id
 SetEntityTamed	接口	服务端	设置生物驯服，需要配合 entityEvent组件使用。该类驯服不包含骑乘功能。
 SetPos	接口	客户端	设置序列帧的位置
 SetPos	接口	服务端	设置实体位置
+SetPos	接口	客户端	设置粒子发射器位置
 SetPos	接口	客户端	设置Shape的位置
 SetPos	接口	客户端	设置粒子发射器的世界坐标位置
 SetRotUseZXY	接口	客户端	设置序列帧的旋转，旋转顺序按照绕z,x,y轴旋转
@@ -317,6 +321,10 @@ StartProfile	接口	客户端	开始启动客户端脚本性能分析，启动�
 StartProfile	接口	服务端	开始启动服务端脚本性能分析，启动后调用[StopProfile](#stopprofile)即可在路径fileName生成函数性能火焰图，此接口只支持PC端。生成的火焰图可以用浏览器打开，推荐chrome浏览器。
 StopProfile	接口	客户端	停止客户端脚本性能分析并生成火焰图，与[StartProfile](#startprofile)配合使用，此接口只支持PC端
 StopProfile	接口	服务端	停止服务端脚本性能分析并生成火焰图，与[StartProfile](#startprofile)配合使用，此接口只支持PC端
+StartMemProfile	接口	客户端	开始启动客户端脚本内存分析，启动后调用[StopMemProfile](#stopMemProfile)即可在路径fileName生成函数内存火焰图，此接口只支持PC端。生成的火焰图可以用浏览器打开，推荐chrome浏览器。
+StartMemProfile	接口	服务端	开始启动服务端脚本内存分析，启动后调用[StopMemProfile](#stopMemProfile)即可在路径fileName生成函数内存火焰图，此接口只支持PC端。生成的火焰图可以用浏览器打开，推荐chrome浏览器。
+StopMemProfile	接口	客户端	停止客户端脚本内存分析并生成火焰图，与[StartMemProfile](#startMemProfile)配合使用，此接口只支持PC端
+StopMemProfile	接口	服务端	停止服务端脚本内存分析并生成火焰图，与[StartMemProfile](#startMemProfile)配合使用，此接口只支持PC端
 StartMultiProfile	接口	客户端	开始启动服务端与客户端双端脚本性能分析，启动后调用[StopMultiProfile](#stopmultiprofile)即可在路径fileName生成函数性能火焰图。双端采集时数据误差较大，建议优先使用[StartProfile](#startprofile)单端版本，此接口只支持PC端
 StartMultiProfile	接口	服务端	开始启动服务端与客户端双端脚本性能分析，启动后调用[StopMultiProfile](#stopmultiprofile)即可在路径fileName生成函数性能火焰图。双端采集时数据误差较大，建议优先使用[StartProfile](#startprofile)单端版本，此接口只支持PC端
 StopMultiProfile	接口	客户端	停止双端脚本性能分析并生成火焰图，与[StartMultiProfile](#startmultiprofile)配合使用，此接口只支持PC端
@@ -593,6 +601,7 @@ GetBlockPoweredState	接口	服务端	获取某个坐标方块的充能状态
 DisableOriginMusic	接口	客户端	停止原生背景音乐
 PlayGlobalCustomMusic	接口	客户端	播放背景音乐
 PlayCustomMusic	接口	客户端	播放场景音效，包括原版音效及自定义音效
+PlayCustomUIMusic	接口	客户端	播放UI音效，包括原版音效及自定义音效
 StopCustomMusic	接口	客户端	停止音效，包括场景音效与背景音乐，将依据fadeOutTime触发OnMusicStopClientEvent事件
 StopCustomMusicById	接口	客户端	停止场景音效
 SetCustomMusicLoop	接口	客户端	设定指定音乐是否循环播放，包括场景音效与背景音乐
@@ -601,6 +610,7 @@ SetBindWorldPosition	接口	客户端	设置UI绑定的worldPosition
 Update	接口	客户端	客户端每帧调用，1秒有30帧
 Destroy	接口	客户端	UI生命周期函数，当UI销毁时调用。
 Create	接口	客户端	UI生命周期函数，当UI创建成功时调用。
+Create	接口	客户端	创建粒子发射器, 创建后立即播放
 OnDeactive	接口	客户端	UI生命周期函数，当栈顶UI有其他UI入栈时调用。
 OnActive	接口	客户端	UI生命周期函数，当UI重新回到栈顶时调用。
 SetScreenVisible	接口	客户端	设置是否显示本界面
@@ -1025,11 +1035,14 @@ IsNaturallySpawned	接口	服务端	获取生物是否为自然生成的
 IsPregnant	接口	服务端	获取生物是否怀孕，截止至网易2.9版本，只对海龟有效
 SetFootPos	接口	服务端	设置实体脚底所在的位置
 Play	接口	客户端	播放序列帧
+Play	接口	客户端	播放粒子发射器
 Play	接口	客户端	播放粒子特效
 Pause	接口	客户端	暂停播放，序列帧定格在当前时刻，再次调用Play时继续播放
+Pause	接口	客户端	暂停粒子发射器的逻辑更新，但保持渲染状态
 Pause	接口	客户端	暂停播放，粒子定格在当前时刻，再次调用Play时继续播放
 Pause	接口	客户端	暂停模型特效（即使用CreateEngineEffectBind创建的特效）
 Stop	接口	客户端	停止序列帧（不是暂停）
+Stop	接口	客户端	停止粒子发射器播放(不渲染且不更新逻辑)
 Stop	接口	客户端	停止粒子播放
 SetFaceCamera	接口	客户端	设置序列帧是否始终朝向摄像机，默认为是
 SetLoop	接口	客户端	设置序列帧是否循环播放，默认为否
@@ -1133,8 +1146,6 @@ GetModelName	接口	服务端	获取实体的模型名称
 GetServerSystemCls	接口	服务端	用于获取服务器system基类。实现新的system时，需要继承该接口返回的类
 SetEntityLimit	接口	服务端	设置世界最大可生成实体数量上限。可生成实体指具有spawnrule的实体。当前世界上被加载的可生成实体数量超过这个上限时，生物就不会再通过spawnrule刷出。
 GetEntityLimit	接口	服务端	获取世界最大可生成实体数量上限。可生成实体的含义见[SetEntityLimit](#setentitylimit)
-StartMemProfile	接口	服务端	开始启动服务端脚本内存分析，启动后调用[StopMemProfile](#stopMemProfile)即可在路径fileName生成函数内存火焰图，此接口只支持PC端。生成的火焰图可以用浏览器打开，推荐chrome浏览器。
-StopMemProfile	接口	服务端	停止服务端脚本内存分析并生成火焰图，与[StartMemProfile](#startMemProfile)配合使用，此接口只支持PC端
 StartRecordPacket	接口	服务端	开始启动服务端与客户端之间的引擎收发包统计，启动后调用[StopRecordPacket](#stoprecordpacket)即可获取两个函数调用之间引擎收发包的统计信息，仅支持租赁服与Apollo网络服环境（不支持单机环境）
 StopRecordPacket	接口	服务端	停止服务端与客户端之间的引擎收发包统计并输出结果，与[StartRecordPacket](#startrecordpacket)配合使用，输出结果为字典，key为网络包名，value字典中记录收发信息，具体见示例，仅支持租赁服与Apollo网络服环境（不支持单机环境）
 StartRecordEvent	接口	服务端	开始启动服务端与客户端之间的脚本事件收发统计，启动后调用[StopRecordEvent](#stoprecordevent)即可获取两个函数调用之间脚本事件收发的统计信息，仅支持租赁服与Apollo网络服环境（不支持单机环境）
@@ -1254,6 +1265,7 @@ Register	接口	客户端	注册实体计算节点
 UnRegister	接口	客户端	注销实体计算节点
 Set	接口	客户端	设置某一个实体计算节点的值
 Get	接口	客户端	获取某一个实体计算节点的值，如果不存在返回注册时的默认值
+GetMolangValue	接口	客户端	获取实体molang变量的值
 EvalMolangExpression	接口	客户端	在实体上下文上执行molang表达式
 EvalMolangExpression	接口	服务端	在实体上下文上执行molang表达式
 GetStringHash64	接口	客户端	返回字符串变量的hash64
@@ -1286,15 +1298,37 @@ GetRecipesByInput	接口	服务端	通过输入物品查询配方
 GetRecipesByInput	接口	客户端	通过输入物品查询配方
 GetAllProperties	接口	服务端	获取实体属性列表
 SetPropertyValue	接口	服务端	设置实体属性的值
+CreateBindEntityNew	接口	客户端	创建粒子发射器并绑定到指定实体的指定骨骼上, 创建后立即播放
+EmitManually	接口	客户端	手动发射粒子一次
+BindEntity	接口	客户端	绑定粒子发射器到指定实体的指定骨骼上
 BindModel	接口	客户端	绑定粒子发射器到指定骨骼模型的指定骨骼上
 BindModel	接口	客户端	把对象绑定到模型上, 支持绑定序列帧，粒子，文本和其它模型
+Unbind	接口	客户端	解除指定粒子发射器的绑定状态
 SetRelative	接口	客户端	设置粒子是否在局部空间进行计算
 SetRelative	接口	客户端	当粒子绑定了entity或骨骼模型时，发射出的粒子使用entity坐标系还是世界坐标系。与mcstudio特效编辑器中粒子的“相对挂点运动”选项功能相同。
 GetBindingID	接口	客户端	返回粒子绑定的实体id，没有则返回"0"
 GetBindingModelID	接口	客户端	返回绑定的骨骼模型id 没有则返回-1
 Remove	接口	客户端	销毁指定粒子发射器
 Remove	接口	客户端	删除Shape
+RemoveByName	接口	客户端	销毁场景中指定名称(粒子发射器json中的identifier)的所有粒子发射器
 Exist	接口	客户端	判断指定粒子发射器是否存在
+Hide	接口	客户端	隐藏粒子发射器(不渲染)
+Show	接口	客户端	显示粒子发射器(开启渲染)
+Resume	接口	客户端	恢复粒子发射器的逻辑更新，不影响渲染状态
+Resume	接口	客户端	继续播放模型特效（即使用CreateEngineEffectBind创建的特效）
+Replay	接口	客户端	重播粒子发射器
+PlayAt	接口	客户端	设置粒子发射器播放时间点
+IsPausing	接口	客户端	返回粒子发射器的逻辑是否正在被暂停
+IsHiding	接口	客户端	返回粒子发射器是否正在被隐藏(不渲染)
+SetTimeScale	接口	客户端	设置粒子发射器的播放速度
+GetTimeScale	接口	客户端	获取粒子发射器的播放速度
+GetDuration	接口	客户端	获取粒子发射器的播放周期(激活+休眠时间)
+GetActiveDuration	接口	客户端	获取粒子发射器的激活周期
+GetSleepDuration	接口	客户端	获取粒子发射器的休眠周期
+GetLoopAge	接口	客户端	获取粒子发射器当前播放周期内已播放的时间
+GetVariable	接口	客户端	获取粒子发射器的Molang变量值
+SetVariable	接口	客户端	设置粒子发射器的Molang变量值
+GetFacingMode	接口	客户端	返回粒子发射器的粒子朝向模式
 NotifyToServer	接口	客户端	客户端发送事件到服务器
 CreateEngineSfx	接口	客户端	创建序列帧特效
 CreateEngineSfxFromEditor	接口	客户端	指使用资源包中effects/xxx.json，按照编辑器中编辑好的参数创建序列帧。支持环状序列帧
@@ -1494,7 +1528,6 @@ IsTextShadowEnabled	接口	客户端	判断文本控件是否显示阴影
 HasComponent	接口	服务端	判断实体是否有原版组件
 GetAllComponentsName	接口	服务端	获取实体所拥有的原版组件list
 GetEntitiesBySelector	接口	服务端	传入目标选择器，获取对应实体id (最大范围是所有已加载的实体)
-Resume	接口	客户端	继续播放模型特效（即使用CreateEngineEffectBind创建的特效）
 SetFogColor	接口	客户端	设置雾效颜色
 ResetFogColor	接口	客户端	重置雾效颜色
 GetUseFogColor	接口	客户端	判断当前是否开启设置雾效颜色，该值默认为False，使用mod传入的颜色值后为True
