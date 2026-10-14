@@ -123,7 +123,7 @@ mod-debug-bridge/
 ├── data/                           预编译索引（API/事件/枚举/MC ID）
 ├── docs/
 │   ├── mcguide/                    官方教程文档镜像
-│   └── mcdocs/                     ModSDK 接口/事件/枚举值文档（build_index_private.py 产出）
+│   └── mcdocs/                     ModSDK 接口/事件/枚举值文档
 ├── tools/
 │   ├── debug_bridge_client.py      DebugBridge 客户端（py2/py3 兼容）
 │   ├── hot_reload.py               热重载脚本（py2，被 hot_reload 工具 subprocess 调用）
