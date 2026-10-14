@@ -74,6 +74,16 @@ GetPlayerMotions	接口	服务端	获取玩家身上的所有运动器
 RemovePlayerMotion	接口	服务端	移除玩家身上的运动器
 StartPlayerMotion	接口	服务端	启动玩家身上的某个运动器
 StopPlayerMotion	接口	服务端	停止玩家身上的某个运动器
+GetRoomInfo	接口	服务端	获取当前所在联机大厅的房间信息，非联机大厅时返回None
+KickPlayer	接口	服务端	踢出玩家，可传入自定义提示信息在客户端断线提示中展示，非联机大厅时返回False
+KickPlayerByUid	接口	服务端	通过uid踢出玩家，可传入自定义提示信息。
+GetHostPlayerUid	接口	服务端	获取当前联机大厅房主的uid，非联机大厅时返回空字符串
+GetHostPlayerUid	接口	服务端	获取服务器拥有者的uid。
+TransferRoomHost	接口	服务端	将联机大厅房主转移给指定在线玩家。仅联机大厅可用，且目标玩家必须在线。
+TransferRoomHostByUid	接口	服务端	通过uid将联机大厅房主转移给指定在线玩家。仅联机大厅可用，且目标玩家必须在线。
+SetRoomMeta	接口	服务端	设置当前联机大厅房间的元数据，房间关闭时清除数据。非联机大厅返回False
+GetRoomMeta	接口	服务端	异步获取指定房间的所有元数据。非联机大厅时返回False
+GetPlayerRoomId	接口	服务端	异步获取uid对应的玩家所在的房间id，非联机大厅时回调返回None
 GetBlockEntityData	接口	服务端	用于获取可操作某个自定义方块实体数据的对象，操作方式与dict类似
 GetBlockEntityData	接口	客户端	用于获取客户端当前维度中方块（包括自定义方块）的数据，数据只读不可写，无法获取箱子内的物品信息。
 GetBlockEntityData	接口	服务端	用于获取方块（包括自定义方块）的数据，如需修改，请使用setblockentitydata接口
@@ -90,23 +100,83 @@ SetRotForClientEntity	接口	客户端	设置客户端实体头与水平方向�
 GetBodyRot	接口	客户端	获取实体的身体的角度
 LockLocalPlayerRot	接口	客户端	在分离摄像机时，锁定本地玩家的头部角度
 SetPlayerLookAtPos	接口	客户端	设置本地玩家看向某个位置
+ConnectPvd	接口	服务端	连接本机 PhysX Visual Debugger（PVD）以调试当前 PhysX 场景
+DisconnectPvd	接口	服务端	断开当前 PhysX 场景与本机 PhysX Visual Debugger（PVD）的连接
 CreatePxActor	接口	服务端	给实体创建自定义刚体
 AddBoxGeometry	接口	服务端	给自定义刚体创建盒形碰撞体
+AddBoxGeometry	接口	客户端	给客户端本地自定义刚体创建盒形碰撞体
 AddCapsuleGeometry	接口	服务端	给自定义刚体创建胶囊形碰撞体
 AddSphereGeometry	接口	服务端	给自定义刚体创建球形碰撞体
 AddBoxTrigger	接口	服务端	给自定义刚体创建盒子形触发器
+RemoveShape	接口	服务端	删除自定义刚体上指定索引的碰撞 shape，适用于盒形、胶囊形、球形碰撞体和触发器
+RemoveShape	接口	客户端	删除客户端本地自定义刚体上指定索引的碰撞 shape
+GetShapeCount	接口	服务端	获取自定义刚体当前的碰撞 shape 数量
+GetShapeCount	接口	客户端	获取客户端本地自定义刚体当前的碰撞 shape 数量
+GetShapeInfo	接口	服务端	获取指定碰撞 shape 的信息
+GetShapeInfo	接口	客户端	获取客户端本地指定碰撞 shape 的信息
+RemoveShapeByUserData	接口	服务端	删除所有 userData 与指定值相同的碰撞 shape
+RemoveShapeByUserData	接口	客户端	删除客户端本地所有 userData 与指定值相同的碰撞 shape
 SetRigidBodyFlag	接口	服务端	设置自定义刚体的行为开关
+SetLinearDamping	接口	服务端	设置动态刚体的线性阻尼，值越大线速度衰减越快
+SetAngularDamping	接口	服务端	设置动态刚体的角阻尼，值越大角速度衰减越快
+SetMass	接口	服务端	设置动态刚体质量
 SetRigidDynamicLockFlags	接口	服务端	设置自定义刚体的约束
 SetActorFlag	接口	服务端	设置物理实体的行为开关
+GetRigidBodyFlags	接口	服务端	获取刚体当前 RigidBodyFlags(诊断接口,bit0=eKINEMATIC)
+GetRigidDynamicLockFlags	接口	服务端	获取动态刚体当前 RigidDynamicLockFlags(诊断接口,bit0-2=Linear XYZ lock,bit3-5=Angular XYZ lock)
+GetActorFlags	接口	服务端	获取 actor 当前 ActorFlags(诊断接口,bit1=eDISABLE_SIMULATION,bit3=eDISABLE_GRAVITY)
+IsDefaultPxActor	接口	服务端	是否为引擎默认创建的 PxActor(诊断接口,True 表示 mod CreatePxActor 实际是 no-op)
+GetMass	接口	服务端	获取自定义刚体的质量(PhysX 内部 mass,由 density+体积合成)
+GetLinearVelocity	接口	服务端	获取自定义刚体的线速度(world space)
+GetLinearVelocity	接口	客户端	获取自定义刚体在世界坐标系下的线速度
+SetLinearVelocity	接口	服务端	设置自定义刚体的线速度(world space),仅对PxRigidDynamic生效
 SetKinematicTarget	接口	服务端	设置运动学刚体的目标变换，仅对开启了PxRigidBodyFlag.eKINEMATIC的自定义刚体生效
 SetGlobalPose	接口	服务端	设置自定义刚体的变换（直接瞬移）
-AddForce	接口	服务端	对自定义刚体的质心添加力，对运动学刚体无效
+SetGlobalPose	接口	客户端	设置客户端本地自定义刚体的变换（直接瞬移）
+AddForce	接口	服务端	对自定义刚体的质心施加全局坐标力；数值单位由mode决定，对运动学刚体无效
+AddTorque	接口	服务端	对自定义刚体添加扭矩，对运动学刚体无效
+AddTorqueLocal	接口	服务端	在自定义刚体本地坐标系中添加扭矩，对运动学刚体无效。X轴为Roll（滚转），Y轴为Yaw（偏航），Z轴为Pitch（俯仰）
 AddForceAtPosLocal	接口	服务端	对自定义刚体的指定位置添加力，对运动学刚体无效
 AddForceAtPos	接口	服务端	对自定义刚体的指定位置添加力，对运动学刚体无效
 GetQuaternion	接口	服务端	获取自定义刚体的四元数旋转
 GetQuaternion	接口	客户端	获取自定义刚体的四元数旋转
 Raycast	接口	服务端	射线检测，获取与射线相交的碰撞体。目前仅支持获取自定义刚体
 Raycast	接口	客户端	射线检测，获取与射线相交的碰撞体。目前仅支持获取自定义刚体
+GetAngularVelocity	接口	服务端	获取自定义刚体的角速度
+GetAngularVelocity	接口	客户端	获取自定义刚体在世界坐标系下的角速度
+SetAngularVelocity	接口	服务端	设置自定义刚体的角速度，对运动学刚体无效
+SetMaxAngularVelocity	接口	服务端	设置自定义刚体的最大角速度，防止碰撞后疯转
+SetMaxLinearVelocity	接口	服务端	设置自定义刚体的最大线速度，防止物体飞出天际
+SetSceneGravity	接口	服务端	设置指定维度 PhysX 场景的全局重力，仅服务端可调用；立即影响该维度内全部受重力的动态 PhysX 刚体。
+SampleBuoyancy	接口	服务端	使用C++批量采样自定义刚体的浸没体积、浮力合力和浮心；本接口只计算，不施力，仅服务端可调用。
+SetRemoteVisualSync	接口	服务端	设置该自定义 PhysX 刚体的远端位置与四元数同步降频参数，整个刚体的所有 shape/mesh 一并生效，仅服务端可调用。
+ClearRemoteVisualSync	接口	服务端	清除该自定义 PhysX 刚体的运行时远端同步配置，恢复实体定义的默认带宽优化行为，仅服务端可调用。
+IsSleeping	接口	服务端	查询自定义刚体是否处于休眠状态
+WakeUp	接口	服务端	唤醒休眠中的刚体
+PutToSleep	接口	服务端	强制刚体进入休眠
+SetCMassLocalPose	接口	服务端	设置质心相对于actor原点的偏移，用于手动调整重心
+GetMassSpaceInertiaTensor	接口	服务端	获取刚体的惯性张量对角线分量
+CreateFixedJoint	接口	服务端	创建固定关节，两个刚体刚性连接，无自由度
+CreateDistanceJoint	接口	服务端	创建距离关节，限制两个锚点之间的距离范围，可配弹簧
+CreateSphericalJoint	接口	服务端	创建球窝关节，允许三轴旋转，可加锥形角度限制
+CreateRevoluteJoint	接口	服务端	创建铰链关节，绕指定轴单轴旋转，可加角度限制和电机
+CreatePrismaticJoint	接口	服务端	创建滑动关节；两个刚体仅能沿指定轴相对平移，旋转被锁定，可加行程限制
+DestroyJoint	接口	服务端	销毁关节
+DestroyJointsForEntity	接口	服务端	销毁指定实体上所有关联的关节，应在实体销毁前调用
+DestroyAllJoints	接口	服务端	销毁所有关节
+SetJointBreakForce	接口	服务端	设置关节可承受的约束力/约束扭矩阈值；PhysX求解出的实际约束载荷超过任一阈值时自动断裂。冲量(eIMPULSE，单位N·s)不能直接与力阈值(N)比较
+SetJointCollisionEnabled	接口	服务端	设置关节关联的两个刚体之间是否发生碰撞，适用于所有关节类型
+GetJointBreakForce	接口	服务端	获取关节的断裂力和断裂扭矩
+IsJointBroken	接口	服务端	查询关节是否已断裂
+GetJointType	接口	服务端	查询关节类型
+GetRevoluteJointAngle	接口	服务端	获取铰链关节当前相对于创建零位的旋转角度。仅对RevoluteJoint有效
+GetRevoluteJointVelocity	接口	服务端	获取铰链关节当前角速度。仅对RevoluteJoint有效
+GetJointFrames	接口	服务端	获取关节两端当前的本地frame和世界frame
+SetDistanceJointParams	接口	服务端	设置距离关节参数
+SetSphericalJointLimitCone	接口	服务端	设置球窝关节的锥形角度限制并启用
+SetRevoluteJointLimit	接口	服务端	设置铰链关节的角度限制并启用
+SetPrismaticJointLimit	接口	服务端	设置滑动关节的行程限制并启用
+SetRevoluteJointDrive	接口	服务端	设置铰链关节的电机并启用
 GetBlockStates	接口	服务端	获取<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>
 SetBlockStates	接口	服务端	设置<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>
 GetBlockAuxValueFromStates	接口	服务端	根据方块名称和<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>获取方块附加值AuxValue
@@ -125,6 +195,8 @@ GetBlockPaletteFromPosList	接口	客户端	根据输入的方块位置列表创
 GetBlockPaletteBetweenPos	接口	服务端	根据输入的两个方块位置创建并获取一个方块调色板，方块调色板用于描述和记录世界中的多个方块的组合。这个方块调色板包含了这两个位置之间的所有方块及其相对位置。
 GetBlockPaletteBetweenPos	接口	客户端	根据输入的两个位置创建并获取一个方块调色板，该接口会搜索这两个位置之间的所有方块创建方块调色板，方块调色板用于描述和记录世界中的多个方块的组合。这个方块调色板包含了这两个位置之间的所有方块及其相对位置。
 SetBlockByBlockPalette	接口	服务端	根据输入的方块调色板内容，将调色板内记录的所有方块设置为实际的方块。
+LookupBlocksByBlockTag	接口	服务端	根据netease_tags中注册的方块tag名，查找该tag下所有方块，支持#引用的标签自动展开；同一tag名被多个模组注册时自动合并去重；未注册的原版tag可直接查询
+LookupBlocksByBlockTag	接口	客户端	根据netease_tags中注册的方块tag名，查找该tag下所有方块，支持#引用的标签自动展开；同一tag名被多个模组注册时自动合并去重；未注册的原版tag可直接查询
 GetAllEffects	接口	客户端	获取实体当前所有状态效果
 GetAllEffects	接口	服务端	获取实体当前所有状态效果
 HasEffect	接口	客户端	获取实体是否存在当前状态效果
@@ -467,6 +539,7 @@ SetActorBlockGeometryVisible	接口	客户端	设置实体中指定的方块几�
 SetActorAllBlockGeometryVisible	接口	客户端	设置实体中所有的方块几何体模型是否显示。
 SetActorBlockGeometryOffset	接口	客户端	设置实体的方块几何体模型的位置偏移。
 SetActorBlockGeometryRotation	接口	客户端	设置实体的方块几何体模型的旋转角度。
+SetActorBlockGeometryRotationQuat	接口	客户端	使用四元数设置实体的方块几何体模型的旋转，避免欧拉角万向锁问题。
 EnableActorBlockGeometryTransparent	接口	客户端	设置是否允许实体的方块几何体模型产生透明度，允许开启后通过调节方块几何体的透明度将会使得方块几何体模型变得透明。
 SetActorBlockGeometryTransparency	接口	客户端	设置实体的方块几何体模型的透明度。注意，只有调用接口EnableActorBlockGeometryTransparent开启了方块几何体模型的透明度后该接口才会生效。
 SetPlayerItemInHandVisible	接口	客户端	设置是否隐藏玩家的手持物品模型显示
@@ -520,6 +593,12 @@ GetCameraMotions	接口	客户端	获取相机上的所有运动器
 RemoveCameraMotion	接口	客户端	移除相机上的某个运动器
 StartCameraMotion	接口	客户端	启动相机上的某个运动器
 StopCameraMotion	接口	客户端	停止相机上的某个运动器
+GetWorldRayFromScreenPoint	接口	客户端	将屏幕坐标转换为一条世界射线，可用于自定义拾取、瞄准辅助等玩法
+WorldToScreenPoint	接口	客户端	将世界坐标转换为屏幕坐标，可用于UI指示箭头、血条跟随等玩法
+GetViewMatrix	接口	客户端	获取视图矩阵，为以相机位置为原点的相对空间视图矩阵（右手系），即仅描述相机朝向的旋转矩阵，不含相机位置平移，开发者可自行计算
+GetProjectionMatrix	接口	客户端	获取当前帧的相机投影矩阵，为标准透视投影矩阵，开发者可自行计算
+GetNearFarPlane	接口	客户端	获取近远裁剪面距离
+GetAspectRatio	接口	客户端	获取画面宽高比
 SetColor	接口	客户端	设置血条的颜色及背景色
 SetColor	接口	客户端	设置Shape的颜色
 ShowHealth	接口	客户端	设置某个entity是否显示血条，默认为显示
@@ -540,6 +619,7 @@ GetTopBlockHeight	接口	客户端	获取当前维度某一位置最高的非空
 GetTopBlockHeight	接口	服务端	获取某一位置最高的非空气方块的高度
 ChangeBlockTextures	接口	客户端	替换方块贴图
 GetBlockTextures	接口	客户端	获取方块的初始贴图信息
+GetTextureAtlasUV	接口	客户端	获取指定纹理在atlas.terrain图集中的UV坐标位置与尺寸信息
 GetDestroyTotalTime	接口	客户端	获取使用物品破坏方块需要的时间
 GetDestroyTotalTime	接口	服务端	获取使用物品破坏方块需要的时间
 SetBlockEntityMolangValue	接口	客户端	设置自定义方块实体的Molang变量，与实体的molang变量作用相同。目前主要用于控制自定义实体的动画状态转变。Molang变量的定义方式与原版实体的Molang变量定义方法相同。详细可参考自定义方块实体动画的教学文档。
@@ -578,6 +658,7 @@ SetBlockRenderDistance	接口	客户端	设置玩家周围方块的可渲染距�
 GetBlockRenderDistance	接口	客户端	获取玩家周围的可渲染距离
 AddTerrainDestroyParticleEffect	接口	客户端	在指定位置播放指定方块被开始破坏时的粒子效果（如果有）。
 RemoveTerrainDestroyParticleEffect	接口	客户端	停止指定位置播放的方块被开始破坏时的粒子效果。
+SpawnDestroyParticleEffect	接口	客户端	在指定位置播放指定方块的破坏爆发粒子效果（一次性，强度与原版一致）。
 SetCrackFrame	接口	客户端	仅客户端的破坏纹理的渲染，可自定义破坏阶段在第几帧。
 DestroyCrackFrame	接口	客户端	销毁特定方块位置上的破坏纹理（仅能销毁SetCrackFrame接口创建的破坏纹理）。
 SetEntityRide	接口	服务端	驯服可骑乘生物
@@ -1069,7 +1150,6 @@ RegisterUpdateFunc	接口	客户端	注册属性值变换时的回调函数，�
 UnRegisterUpdateFunc	接口	客户端	反注册属性值变换时的回调函数
 SetEntityScale	接口	服务端	设置实体的放缩比例大小，设置比例过大会导致游戏卡顿，建议控制在20倍以内。实体的scale的立方乘以包围盒的体积不可超过32768
 GetEntityScale	接口	服务端	获取实体的放缩比例大小
-GetHostPlayerUid	接口	服务端	获取服务器拥有者的uid。
 SetToggleState	接口	客户端	设置Toggle开关控件的值
 GetToggleState	接口	客户端	获取Toggle开关控件的状态
 GetConfigData	接口	客户端	获取本地配置文件中存储的数据
@@ -1197,8 +1277,10 @@ SetInvItemExchange	接口	服务端	交换玩家背包物品
 GetDroppedItem	接口	服务端	获取掉落物的物品信息
 GetEquItemEnchant	接口	服务端	获取装备槽位中盔甲的附魔
 GetEquItemModEnchant	接口	服务端	获取装备槽位中盔甲的自定义附魔
-GetItemTags	接口	服务端	获取物品在minecraft:tags中定义的tags列表
-GetItemTags	接口	客户端	获取物品在minecraft:tags中定义的tags列表
+GetItemTags	接口	服务端	获取物品的tags列表，包含原版minecraft:tags中定义的tags，以及netease_tags中注册并挂载到物品上的自定义标签
+GetItemTags	接口	客户端	获取物品的tags列表，包含原版minecraft:tags中定义的tags，以及netease_tags中注册并挂载到物品上的自定义标签
+LookupItemsByItemTag	接口	服务端	根据netease_tags中注册的物品tag名，查找该tag下所有物品，支持#引用的标签自动展开；同一tag名被多个模组注册时自动合并去重；未注册的原版tag可直接查询
+LookupItemsByItemTag	接口	客户端	根据netease_tags中注册的物品tag名，查找该tag下所有物品，支持#引用的标签自动展开；同一tag名被多个模组注册时自动合并去重；未注册的原版tag可直接查询
 GetItemBasicInfo	接口	服务端	获取物品的基础信息
 GetItemBasicInfo	接口	客户端	获取物品的基础信息
 GetPlayerAllItems	接口	服务端	获取玩家指定的槽位的批量物品信息
@@ -1359,6 +1441,7 @@ GetItemHoverName	接口	客户端	获取物品的hover名称，如：灾厄旗�
 GetItemEffectName	接口	客户端	获取物品的状态描述，如：§7保护 0§r
 ChangeItemTexture	接口	客户端	替换物品的贴图，修改后所有用到该贴图的物品都会被改变，后续创建的此类物品也会被改变。会同时修改物品在UI界面上的显示，手持时候的显示与场景掉落的显示。
 GetItemTexture	接口	客户端	获取item_texture.json中物品的贴图路径。
+GetIconInfo	接口	客户端	获取物品图标纹理在图集中的UV坐标位置与尺寸信息
 SetCompassTarget	接口	客户端	设置指南针的朝向位置
 SetCompassEntity	接口	客户端	设置指南针朝向的实体
 AddUseItemParticleEffect	接口	客户端	在指定位置播放指定物品被开始使用时的粒子效果（如果有）。
@@ -1837,11 +1920,15 @@ PlayerPermissionChangeServerEvent	事件	服务端	玩家权限变更事件
 ItemPushInCustomContainerServerEvent	事件	服务端	漏斗漏入物品时触发该事件
 ItemPullOutCustomContainerServerEvent	事件	服务端	漏出物品到漏斗时触发该事件
 PhysxTouchServerEvent	事件	服务端	给自定义刚体添加的碰撞体，与其他碰撞体或原版实体发生碰撞/结束碰撞时触发。需要在碰撞体创建时使用PxEventMask.Server才会触发
+PhysXPreSimulateServerEvent	事件	服务端	服务端每个参与物理模拟的维度执行 PhysX simulate 前触发。在本事件中对当前维度刚体施加的力或扭矩会参与当次模拟
+PhysXPostSimulateServerEvent	事件	服务端	服务端每个参与物理模拟的维度完成 PhysX fetchResults 后触发，可读取当次模拟产生的最新 PhysX 线速度、角速度和旋转状态
+PhysXJointBreakServerEvent	事件	服务端	脚本创建的PhysX关节受力超过SetJointBreakForce设置的阈值并断裂后触发
 LiquidClippedServerEvent	事件	服务端	玩家服务端点击流体时触发（支持原版流体与自定义流体）
 PhysxTriggerServerEvent	事件	服务端	给自定义刚体添加的触发器，与其他碰撞体或原版实体发生进入触发器/离开触发器时触发。需要在触发器创建时使用PxEventMask.Server才会触发
 PlayerFishingServerEvent	事件	服务端	玩家钓鱼成功收杆时触发，在钓鱼掉落物生成前触发
 PlayerFishingAfterServerEvent	事件	服务端	玩家钓鱼成功收杆后触发，在钓鱼掉落物生成后触发
 PlayerStartFishingServerEvent	事件	服务端	玩家开始钓鱼，生成鱼钩时在服务端触发
+RoomHostChangedServerEvent	事件	服务端	联机大厅房主实际改变后触发。非联机大厅不触发；房主uid未变化不触发。
 ClientShapedRecipeTriggeredEvent	事件	客户端	玩家合成物品时触发
 StepOnBlockClientEvent	事件	客户端	触发时机：实体刚移动至一个新实心方块时触发。
 StepOffBlockClientEvent	事件	客户端	触发时机：实体移动离开一个实心方块时触发
@@ -1956,6 +2043,8 @@ OnCustomKeyChangedEvent	事件	客户端	当自定义按键绑定发生改变时
 OnCustomGamepadPressInGame	事件	客户端	当玩家按下自定义手柄按键时触发
 OnCustomGamepadChangedEvent	事件	客户端	当自定义手柄按键绑定发生改变时触发
 PhysxTouchClientEvent	事件	客户端	给自定义刚体添加的碰撞体，与其他碰撞体或原版实体发生碰撞/结束碰撞时触发。需要在碰撞体创建时使用PxEventMask.Client才会触发
+PhysXPreSimulateClientEvent	事件	客户端	客户端本地玩家当前维度执行 PhysX simulate 前触发，可用于轻量的视觉预测准备
+PhysXPostSimulateClientEvent	事件	客户端	客户端本地玩家当前维度完成 PhysX fetchResults 后触发，可通过 PhysX 组件读取当前帧最新线速度、角速度和四元数旋转
 LiquidClippedClientEvent	事件	客户端	玩家客户端点击流体时触发（支持原版流体与自定义流体）
 PlayerAddCustomContainerItemClientEvent	事件	客户端	玩家成功将物品添加到自定义容器时触发该事件
 PlayerRemoveCustomContainerItemClientEvent	事件	客户端	玩家成功从自定义容器中移除物品时触发该事件

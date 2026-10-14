@@ -10,7 +10,7 @@ GitHub 认证 token 从 git credential 自动读取。
 默认走代理 http://127.0.0.1:7890（raw/API 直连不稳定）。
 
 用法：
-    python sync_mcguide.py [--no-proxy] [--output ..\\mcguide]
+    python sync_mcguide.py [--no-proxy] [--output ..\\docs\\mcguide]
 """
 import argparse
 import json
@@ -31,7 +31,7 @@ PRUNE_DIRS = ["20-玩法开发/14-预设玩法编程"]
 
 DEFAULT_OUTPUT = str(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 项目根
-) + os.sep + "mcguide"
+) + os.sep + os.path.join("docs", "mcguide")
 
 
 # ============================================================

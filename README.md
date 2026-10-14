@@ -101,7 +101,7 @@ python tools/build_mc_ids.py
 ### 数据来源
 
 - `interface.json` / `events.json` / 接口事件文档：来自 [MCNeteaseDevs/modsdk_mcp_server](https://github.com/MCNeteaseDevs/modsdk_mcp_server) 的 `docs/` 目录
-- `mcguide/`：来自 [MCNeteaseDevs/netease-bedrock-wiki](https://github.com/MCNeteaseDevs/netease-bedrock-wiki) 的 mcguide 目录
+- `docs/mcguide/`：来自 [MCNeteaseDevs/netease-bedrock-wiki](https://github.com/MCNeteaseDevs/netease-bedrock-wiki) 的 mcguide 目录
 - `mc_ids.txt`：来自 Minecraft Wiki
 
 ## 详细文档
@@ -121,7 +121,9 @@ mod-debug-bridge/
 ├── server.py                       MCP 服务器入口
 ├── requirements.txt
 ├── data/                           预编译索引（API/事件/枚举/MC ID）
-├── mcguide/                        官方教程文档镜像
+├── docs/
+│   ├── mcguide/                    官方教程文档镜像
+│   └── mcdocs/                     ModSDK 接口/事件/枚举值文档（build_index_private.py 产出）
 ├── tools/
 │   ├── debug_bridge_client.py      DebugBridge 客户端（py2/py3 兼容）
 │   ├── hot_reload.py               热重载脚本（py2，被 hot_reload 工具 subprocess 调用）

@@ -109,7 +109,7 @@ brick_stairs	方块	红砖楼梯
 stone_brick_stairs	方块	石砖楼梯
 mycelium	方块	菌丝体
 waterlily	方块	睡莲
-nether_brick	方块	下界砖
+nether_brick	方块	下界砖块
 nether_brick_fence	方块	下界砖栅栏
 nether_brick_stairs	方块	下界砖楼梯
 nether_wart	方块	下界疣
@@ -1479,6 +1479,10 @@ blue_concrete_double_slab	方块	蓝色混凝土双层台阶
 purple_concrete_double_slab	方块	紫色混凝土双层台阶
 magenta_concrete_double_slab	方块	品红色混凝土双层台阶
 pink_concrete_double_slab	方块	粉红色混凝土双层台阶
+icicle	方块	冰锥
+ice_crystal	方块	冰晶
+brittle_ice	方块	脆冰
+disc_press	方块	Disc press
 golden_apple	物品	金苹果
 enchanted_golden_apple	物品	附魔金苹果
 mushroom_stew	物品	蘑菇煲
@@ -2008,6 +2012,7 @@ purple_cushion	物品	紫色坐垫
 red_cushion	物品	红色坐垫
 white_cushion	物品	白色坐垫
 yellow_cushion	物品	黄色坐垫
+frostbite_spawn_egg	物品	冻尸刷怪蛋
 wool	物品	羊毛
 carpet	物品	地毯
 log	物品	原木
@@ -2058,6 +2063,9 @@ dye	物品	染料
 banner_pattern	物品	旗帜图案
 spawn_egg	物品	刷怪蛋
 end_crystal	物品	末地水晶
+ice_ball	物品	冰球
+ice_crystal	物品	冰晶
+icicle	物品	冰锥
 red_shrub	物品	红灌木
 shelf_mushroom	物品	层孔菇
 copper_spear	物品	铜矛
@@ -2230,6 +2238,8 @@ parched	实体	焦骸
 camel_husk	实体	骆驼尸壳
 sulfur_cube	实体	硫方怪
 cushion	实体	坐垫
+frostbite	实体	冻尸
+ice_ball	实体	冰球
 trader_llama	实体	行商羊驼
 chest_boat	实体	运输船
 speed	状态效果	迅捷
@@ -2269,6 +2279,7 @@ oozing	状态效果	渗浆
 infested	状态效果	寄生
 raid_omen	状态效果	袭击之兆
 breath_of_the_nautilus	状态效果	鹦鹉螺之息
+freezing	状态效果	冰冻
 protection	附魔	保护	0
 fire_protection	附魔	火焰保护	1
 feather_falling	附魔	摔落缓冲	2
