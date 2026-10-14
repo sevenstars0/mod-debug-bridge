@@ -4,8 +4,8 @@ tools/.hot_reload_state.json
 # server.py 单实例锁文件（运行时生成）
 server.pid
 
-# sync.py 是个人同步工具（含个人路径配置），不上传
-sync.py
+# MCStudio 直连工程的配置文件（含本机路径，MCStudio 本地生成，不上传）
+DebugBridge/studio.json
 
 # HANDOVER.md 含 token/邮箱/绝对路径等敏感信息，仅本地用，不上传
 HANDOVER.md

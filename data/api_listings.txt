@@ -124,7 +124,7 @@ SetRigidDynamicLockFlags	接口	服务端	设置自定义刚体的约束
 SetActorFlag	接口	服务端	设置物理实体的行为开关
 GetRigidBodyFlags	接口	服务端	获取刚体当前 RigidBodyFlags(诊断接口,bit0=eKINEMATIC)
 GetRigidDynamicLockFlags	接口	服务端	获取动态刚体当前 RigidDynamicLockFlags(诊断接口,bit0-2=Linear XYZ lock,bit3-5=Angular XYZ lock)
-GetActorFlags	接口	服务端	获取 actor 当前 ActorFlags(诊断接口,bit1=eDISABLE_SIMULATION,bit3=eDISABLE_GRAVITY)
+GetActorFlags	接口	服务端	获取 actor 当前 ActorFlags(诊断接口,bit1=eDISABLE_GRAVITY,bit2=eSEND_SLEEP_NOTIFIES,bit3=eDISABLE_SIMULATION)
 IsDefaultPxActor	接口	服务端	是否为引擎默认创建的 PxActor(诊断接口,True 表示 mod CreatePxActor 实际是 no-op)
 GetMass	接口	服务端	获取自定义刚体的质量(PhysX 内部 mass,由 density+体积合成)
 GetLinearVelocity	接口	服务端	获取自定义刚体的线速度(world space)

@@ -170,11 +170,11 @@ comp.PlayerUseItemToPos(pos, 2, 0, 1)
 
 ### 组件工厂对失效实体：comp 拿得到，取值方法返回 None
 
-`CF.CreatePos(deadId)` / `CF.CreateRot(deadId)` / `CF.CreateName(deadId)` 等对已销毁实体**不抛错、返回有效 comp**，但 `GetFootPos()` / `GetRot()` / `GetName()` 返回 **None**。所以判空要判**返回值**而不是判 comp：`pos = CF.CreatePos(boatId).GetFootPos()` 后 `if not pos: return`，不要 `if comp:`。例外：传空字符串 `''` 这类非法 id 时组件工厂可能返回 None（`None.GetFootPos()` 直接 AttributeError），入参可能为空串时先 `if entityId:` 预判。来源：引擎 entityMgr.py 实现 + 既有代码信任模式交叉验证。`GetPos` 与 `GetFootPos` 对**非玩家**完全一致（都是脚底坐标），仅玩家有眼位差（站立/行走 +1.62、睡觉 +0.2、骑乘约 +1.4）。
+`CF.CreatePos(deadId)` / `CF.CreateRot(deadId)` / `CF.CreateName(deadId)` 等对已销毁实体**不抛错、返回有效 comp**，但 `GetFootPos()` / `GetRot()` / `GetName()` 返回 **None**。所以判空要判**返回值**而不是判 comp：`pos = CF.CreatePos(boatId).GetFootPos()` 后 `if not pos: return`，不要 `if comp:`。例外：传空字符串 `''` 这类非法 id 时组件工厂可能返回 None（`None.GetFootPos()` 直接 AttributeError），入参可能为空串时先 `if entityId:` 预判。来源：反编译 `C:/Users/<用户名>/Desktop/代码/modsdk反编译/mod` 的 entityMgr.py + 既有代码信任模式交叉验证。`GetPos` 与 `GetFootPos` 对**非玩家**完全一致（都是脚底坐标），仅玩家有眼位差（站立/行走 +1.62、睡觉 +0.2、骑乘约 +1.4）。
 
 ### ExtraData 存引用，落盘只在 SetExtraData 时快照
 
-引擎 ExtraData 管理器（extraDataMgr.py 的 `self.mEntityData[entityId][key] = val`）**存引用**：`GetExtraData` 返回的是 SetExtraData 存入的同一对象，运行期原地修改（`del d[k]`、`d[k] = v`、子 dict 增删）全局立即可见；但**落盘（msgpack 快照）只发生在调用 SetExtraData 的那一刻**。原地改完引用不重新 SetExtraData，正常流程无恙，服务端异常退出后读档回退到旧快照。结论：**改引用必写回**——`comp.SetExtraData('DV_X', d)` 再执行一次即可。
+引擎 ExtraData 管理器（反编译 extraDataMgr.py `self.mEntityData[entityId][key] = val`）**存引用**：`GetExtraData` 返回的是 SetExtraData 存入的同一对象，运行期原地修改（`del d[k]`、`d[k] = v`、子 dict 增删）全局立即可见；但**落盘（msgpack 快照）只发生在调用 SetExtraData 的那一刻**。原地改完引用不重新 SetExtraData，正常流程无恙，服务端异常退出后读档回退到旧快照。结论：**改引用必写回**——`comp.SetExtraData('DV_X', d)` 再执行一次即可。
 
 ### BlockPalette 调色板分层：common 记全部方块，actor 只是实体数据层
 
@@ -232,10 +232,10 @@ if bi.GetLiquidBlock(pos, dim):   # 含水方块第一次置空后变纯水方�
 
 ## 热重载底层脚本（备选）
 
-`hot_reload` MCP 工具内部调的脚本：`tools/hot_reload.py`（仓库根下）。需要直接跑命令行时（如调试工具自身）：
+`hot_reload` MCP 工具内部调的脚本：`D:/mod-debug-bridge/tools/hot_reload.py`。需要直接跑命令行时（如调试工具自身）：
 
 ```bash
-py -2 -B tools/hot_reload.py
+py -2 -B "D:/mod-debug-bridge/tools/hot_reload.py"
 ```
 
 命令行参数：无参自动扫改动；`chainScripts.xxx` 指定模块；`--client`/`--server` 指定端；`--pkg <name>` 多 mod 时指定包名。实现细节、踩坑记录都在该脚本顶部注释里。
@@ -266,4 +266,6 @@ questions: [{
 
 .py 改动不受这条规则约束，调 `hot_reload` 工具即可。
 
-DebugBridge mod 实际运行路径：`C:/MCStudioDownload/work/<用户开发者邮箱>/Cpp/AddOn/<hash目录>/DebugBridgeB/DebugBridge/`
+## DebugBridge 源码修改与发布（改 DebugBridge/scripts 源码时）
+
+DebugBridge mod 由 MCStudio 直连 `D:/mod-debug-bridge/DebugBridge/` 工程运行（studio.json 为工程配置，gitignored），源码即仓库内 `DebugBridge/DebugBridgeB/DebugBridge/`，改完重启游戏生效。发布到 GitHub 直接 git push（代理已配在 .git/config，token 在 git credential manager）。

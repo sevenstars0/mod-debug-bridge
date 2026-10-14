@@ -3,7 +3,7 @@ from common.mod import Mod
 from config import ModName
 import server.extraServerApi as serverApi
 import client.extraClientApi as clientApi
-@Mod.Binding(name=ModName, version='1.0.0')
+@Mod.Binding(name = ModName, version = '0.0.1')
 class Main(object):
     @Mod.InitServer()
     def ServerInit(self):
