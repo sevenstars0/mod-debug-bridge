@@ -149,7 +149,7 @@ def main():
         lines.append("{}\t附魔\t{}\t{}".format(ns_id, name, num_id))
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    OUTPUT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
     counts = {}
     for line in lines:

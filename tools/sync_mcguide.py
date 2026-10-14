@@ -166,8 +166,8 @@ def download_all(opener, token, md_paths, dest_root):
             rel = path[len("mcguide/"):]
             local = os.path.join(dest_root, rel.replace("/", os.sep))
             os.makedirs(os.path.dirname(local), exist_ok=True)
-            with open(local, "w", encoding="utf-8") as f:
-                f.write(text)
+            with open(local, "w", encoding="utf-8", newline="\n") as f:
+                f.write(text.replace("\r\n", "\n"))
             ok_count += 1
 
         print("批次 {}/{}: {}/{} ok".format(batch_num, total_batches, len(results), len(batch)))

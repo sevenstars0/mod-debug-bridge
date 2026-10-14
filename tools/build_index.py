@@ -528,7 +528,7 @@ def download_docs_from_github(dest_root, use_proxy=True):
     def save_file(path, text):
         local = docs_dir / Path(path).relative_to("docs")
         local.parent.mkdir(parents=True, exist_ok=True)
-        local.write_text(text, encoding="utf-8")
+        local.write_text(text.replace("\r\n", "\n"), encoding="utf-8", newline="\n")
 
     ok_count = 0
     fail_count = 0
@@ -653,11 +653,11 @@ def main():
 
     # 写出
     index_path = output_dir / "api_index.json"
-    index_path.write_text(json.dumps(index, ensure_ascii=False), encoding="utf-8")
+    index_path.write_text(json.dumps(index, ensure_ascii=False), encoding="utf-8", newline="\n")
     print("写出 {} ({} KB)".format(index_path, index_path.stat().st_size // 1024))
 
     listings_path = output_dir / "api_listings.txt"
-    listings_path.write_text("\n".join(listings), encoding="utf-8")
+    listings_path.write_text("\n".join(listings), encoding="utf-8", newline="\n")
     print("写出 {} ({} KB, {} 行)".format(
         listings_path, listings_path.stat().st_size // 1024, len(listings)))
 
