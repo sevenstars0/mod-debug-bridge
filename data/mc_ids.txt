@@ -1482,7 +1482,18 @@ pink_concrete_double_slab	方块	粉红色混凝土双层台阶
 icicle	方块	冰锥
 ice_crystal	方块	冰晶
 brittle_ice	方块	脆冰
-disc_press	方块	Disc press
+packed_ice_bricks	方块	浮冰砖
+disc_press	方块	Disc Press
+packed_ice_brick_slab	方块	浮冰砖台阶
+packed_ice_brick_stairs	方块	浮冰砖楼梯
+chiseled_packed_ice	方块	雕纹浮冰
+packed_ice_brick_wall	方块	浮冰砖墙
+packed_ice_brick_double_slab	方块	浮冰砖双层台阶
+snow_bricks	方块	雪砖
+snow_brick_stairs	方块	雪砖楼梯
+snow_brick_slab	方块	雪砖台阶
+snow_brick_double_slab	方块	雪砖双层台阶
+snow_brick_wall	方块	雪砖墙
 golden_apple	物品	金苹果
 enchanted_golden_apple	物品	附魔金苹果
 mushroom_stew	物品	蘑菇煲
@@ -2062,6 +2073,25 @@ boat	物品	船
 dye	物品	染料
 banner_pattern	物品	旗帜图案
 spawn_egg	物品	刷怪蛋
+blank_disc	物品	Blank Disc
+track_disc	物品	Track Disc
+pocket_jukebox	物品	Pocket Jukebox
+black_pocket_jukebox	物品	黑色Pocket Jukebox
+red_pocket_jukebox	物品	红色Pocket Jukebox
+green_pocket_jukebox	物品	绿色Pocket Jukebox
+brown_pocket_jukebox	物品	棕色Pocket Jukebox
+blue_pocket_jukebox	物品	蓝色Pocket Jukebox
+purple_pocket_jukebox	物品	紫色Pocket Jukebox
+cyan_pocket_jukebox	物品	青色Pocket Jukebox
+light_gray_pocket_jukebox	物品	淡灰色Pocket Jukebox
+gray_pocket_jukebox	物品	灰色Pocket Jukebox
+pink_pocket_jukebox	物品	粉红色Pocket Jukebox
+lime_pocket_jukebox	物品	黄绿色Pocket Jukebox
+yellow_pocket_jukebox	物品	黄色Pocket Jukebox
+light_blue_pocket_jukebox	物品	淡蓝色Pocket Jukebox
+magenta_pocket_jukebox	物品	品红色Pocket Jukebox
+orange_pocket_jukebox	物品	橙色Pocket Jukebox
+white_pocket_jukebox	物品	白色Pocket Jukebox
 end_crystal	物品	末地水晶
 ice_ball	物品	冰球
 ice_crystal	物品	冰晶

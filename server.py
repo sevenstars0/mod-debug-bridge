@@ -303,6 +303,64 @@ def _diagnose_connection_failure(port):
     return "连接超时，可能游戏处于后台，tick暂停导致socket卡死，请把游戏窗口切回前台再试"
 
 
+def _focus_game_window():
+    """把游戏窗口切到前台（游戏在后台时 tick 暂停，socket 连接会卡死）。
+    返回是否发生了切换：False = 窗口不存在或已在前台。"""
+    user32 = ctypes.windll.user32
+    # 网易版 MC 渲染窗口是类名 OGLES 的顶层窗口，标题形如 "(1920, 1125) Minecraft"；
+    # UWP 进程 MainWindowHandle 常为 0，只能按类名+标题找
+    hwnd = user32.FindWindowW("OGLES", None)
+    if not hwnd or user32.GetForegroundWindow()==hwnd:
+        return False
+    title = ctypes.create_unicode_buffer(64)
+    user32.GetWindowTextW(hwnd, title, 64)
+    if "Minecraft" not in title.value:
+        return False
+    if user32.IsIconic(hwnd):
+        user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+    # 本进程不是前台进程，直接 SetForegroundWindow 会被 Windows 拒绝，
+    # 先按一下 ALT 取得激活权再切
+    user32.keybd_event(0x12, 0, 0, 0)  # VK_MENU 按下
+    user32.SetForegroundWindow(hwnd)
+    user32.keybd_event(0x12, 0, 2, 0)  # KEYEVENTF_KEYUP
+    return True
+
+
+def _run_hot_reload(cmd):
+    """跑 hot_reload.py 子进程，返回 (stdout, stderr) 文本，超时返回 None。"""
+    # hot_reload.py 是 py2 脚本，Windows 下 print 中文走 MBCS(GBK)，不是 UTF-8。
+    # py3 subprocess 默认 UTF-8 解码会抛 UnicodeDecodeError，显式指定 GBK。
+    #
+    # 注意：不能用 subprocess.run(capture_output=True) 或 Popen(stdout=PIPE)。
+    # 本进程的 stdio 被 mcp.server.stdio_server 接管（asyncio），子进程继承
+    # stdout/stderr 句柄后 Popen.communicate 卡 30s（PIPE 读不到 EOF）。
+    # 改为输出重定向到临时文件，wait 完再读，绕开管道通信。0.08s 正常返回。
+    with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as out_file, \
+         tempfile.NamedTemporaryFile(mode='w+b', delete=False) as err_file:
+        out_path, err_path = out_file.name, err_file.name
+    try:
+        with open(out_path, 'w') as out_handle, open(err_path, 'w') as err_handle:
+            process = subprocess.Popen(cmd, stdout=out_handle, stderr=err_handle, stdin=subprocess.DEVNULL)
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                # 不 kill 会残留孤儿 py2 进程继续占用游戏端口，干扰下次重试
+                process.kill()
+                process.wait()
+                return None
+        with open(out_path, 'rb') as f:
+            out = f.read().decode('gbk', 'replace')
+        with open(err_path, 'rb') as f:
+            err = f.read().decode('gbk', 'replace')
+        return out, err
+    finally:
+        for path in (out_path, err_path):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+
 def _build_listen_code(namespace, systemName, eventName, side, callback_code):
     """构造 mod 端注册事件监听器的代码。
 
@@ -501,7 +559,10 @@ async def call_tool(name, arguments):
     elif name == "get_event_log":
         # 遍历 __main__._db_event_states（多监听），每个监听器输出一段：标注行 + queue 内容。
         # 空段也输出标注行，让用户看到监听器存在但没触发。
-        # 不知道当前 side，两端都试一遍——listen_event 注册的端会有 states，另一端会拿到 NOT_REGISTERED。
+        # 不知道事件注册在哪端，两端都读，各自用 "--- side ---" 标注后拼接，
+        # 避免双端都有监听器时 server 端结果遮蔽 client 端。
+        sections = []
+        connection_error = None
         for side in ("server", "client"):
             success, payload, is_tool_error = _exec_with_retry(
                 'import __main__\n'
@@ -515,14 +576,19 @@ async def call_tool(name, arguments):
                 side,
             )
             if is_tool_error:
-                # 一端连接失败不算最终结果，继续试另一端
+                # 一端连接失败不算最终结果，继续读另一端
+                connection_error = connection_error or payload
                 continue
             if not success:
                 continue
             text = payload.strip()
-            if text == "NOT_REGISTERED":
-                continue
-            return [TextContent(type="text", text=text if text else "(no events captured yet)")]
+            if text != "NOT_REGISTERED":
+                sections.append("--- {} ---\n{}".format(side, text))
+        if sections:
+            return [TextContent(type="text", text="\n\n".join(sections))]
+        if connection_error:
+            # 两端都没读到日志且至少一端连接失败：报连接错误而非误导性的"未注册"
+            return _tool_error(connection_error)
         return [TextContent(type="text", text="未注册任何事件监听器，请先调用listen_event")]
 
     elif name == "unlisten_event":
@@ -579,36 +645,15 @@ async def call_tool(name, arguments):
             cmd += ["--pkg", pkg]
         cmd += list(modules)
         try:
-            # hot_reload.py 是 py2 脚本，Windows 下 print 中文走 MBCS(GBK)，不是 UTF-8。
-            # py3 subprocess 默认 UTF-8 解码会抛 UnicodeDecodeError，显式指定 GBK。
-            #
-            # 注意：不能用 subprocess.run(capture_output=True) 或 Popen(stdout=PIPE)。
-            # 本进程的 stdio 被 mcp.server.stdio_server 接管（asyncio），子进程继承
-            # stdout/stderr 句柄后 Popen.communicate 卡 30s（PIPE 读不到 EOF）。
-            # 改为输出重定向到临时文件，wait 完再读，绕开管道通信。0.08s 正常返回。
-            with tempfile.NamedTemporaryFile(mode='w+b', delete=False) as _out_f, \
-                 tempfile.NamedTemporaryFile(mode='w+b', delete=False) as _err_f:
-                _out_path, _err_path = _out_f.name, _err_f.name
-            with open(_out_path, 'w') as _o, open(_err_path, 'w') as _e:
-                _proc = subprocess.Popen(cmd, stdout=_o, stderr=_e, stdin=subprocess.DEVNULL)
-                try:
-                    _proc.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    # 不 kill 会残留孤儿 py2 进程继续占用游戏端口，干扰下次重试
-                    _proc.kill()
-                    _proc.wait()
-                    raise
-            with open(_out_path, 'rb') as _f:
-                _out = _f.read().decode('gbk', 'replace')
-            with open(_err_path, 'rb') as _f:
-                _err = _f.read().decode('gbk', 'replace')
-            for _p in (_out_path, _err_path):
-                try:
-                    os.remove(_p)
-                except OSError:
-                    pass
-        except subprocess.TimeoutExpired:
-            return _tool_error("hot_reload执行超时（>5s），多半是游戏处于后台tick暂停导致连接卡死，请把游戏窗口切回前台再试")
+            result = _run_hot_reload(cmd)
+            # 超时多半是游戏后台 tick 暂停导致连接卡死：
+            # 游戏在后台就自动切前台，等 tick 恢复推进后重试一次
+            if result is None and _focus_game_window():
+                await asyncio.sleep(5)
+                result = _run_hot_reload(cmd)
+            if result is None:
+                return _tool_error("hot_reload执行超时（>5s），游戏不在后台或切前台重试仍卡死，请检查游戏窗口状态")
+            _out, _err = result
         except Exception as e:
             return _tool_error("hot_reload执行失败：{}".format(e))
         # 脚本退出码非 0（有 failure）不算工具错——跟 execute_code 语义一致
