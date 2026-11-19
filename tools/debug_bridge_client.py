@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """DebugBridge MCP 客户端：连接游戏内 DebugBridge mod 执行 Python 代码。
 
-协议（与 D:/mod-debug-bridge/scripts/debug_bridge_client.py 的 py2 版完全一致）：
+协议：
   请求帧 = 4 字节大端长度 + JSON {"id":1, "code":...}（UTF-8）
   响应帧 = 4 字节大端长度 + JSON {"id","success","stdout","stderr"}
 

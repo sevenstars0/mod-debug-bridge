@@ -13,7 +13,7 @@
 
 前三个工具仅依赖 data/ 下的预编译索引；execute_code/listen_event/get_event_log
 依赖 tools/debug_bridge_client.py 连接游戏进程（端口 14530/14531）；
-hot_reload 通过 subprocess 调 py2 脚本（D:/mod-debug-bridge/scripts/hot_reload.py）。
+hot_reload 通过 subprocess 调 py2 脚本（D:/mod-debug-bridge/tools/hot_reload.py）。
 """
 import asyncio
 import ctypes
@@ -96,7 +96,7 @@ async def list_tools():
                 "properties": {
                     "pattern": {
                         "type": "string",
-                        "description": "正则表达式，如golden_apple、^.*_axe、苹果、剑|斧",
+                        "description": "正则表达式，中英文均可，不含minecraft:前缀",
                     },
                     "entry_type": {
                         "type": "string",
@@ -267,6 +267,8 @@ def _exec_with_retry(code, side):
                 return True, resp.get("stdout", ""), False
             return False, resp.get("stderr", "(no stderr)"), False
         except (socket.error, socket.timeout, EOFError):
+            # 卡死主因是游戏被最小化（tick 暂停）：还原窗口再退避重试
+            _restore_game_window()
             if attempt < 2:
                 time.sleep(0.5 * (attempt + 1))
                 continue
@@ -299,30 +301,25 @@ def _diagnose_connection_failure(port):
     if not port_listening:
         return "调试工具未加载，请让用户装载调试工具mod后再进行开发测试"
 
-    # 3. 端口在监听但 socket 连不上 → 多数是游戏后台/最小化导致 tick 暂停
-    return "连接超时，可能游戏处于后台，tick暂停导致socket卡死，请把游戏窗口切回前台再试"
+    # 3. 端口在监听但 socket 连不上 → 多数是游戏被最小化导致 tick 暂停
+    return "连接超时，可能游戏被最小化导致tick暂停，请确认游戏窗口已还原（非最小化）后重试"
 
 
-def _focus_game_window():
-    """把游戏窗口切到前台（游戏在后台时 tick 暂停，socket 连接会卡死）。
-    返回是否发生了切换：False = 窗口不存在或已在前台。"""
+def _restore_game_window():
+    """游戏窗口最小化时 tick 暂停，socket 连接会卡死；还原窗口让 tick 继续。
+    仅被遮挡/失焦不影响 tick，还原不激活、不抢焦点。
+    返回是否发生了还原：False = 未最小化或窗口不存在。"""
     user32 = ctypes.windll.user32
     # 网易版 MC 渲染窗口是类名 OGLES 的顶层窗口，标题形如 "(1920, 1125) Minecraft"；
     # UWP 进程 MainWindowHandle 常为 0，只能按类名+标题找
     hwnd = user32.FindWindowW("OGLES", None)
-    if not hwnd or user32.GetForegroundWindow()==hwnd:
+    if not hwnd or not user32.IsIconic(hwnd):
         return False
     title = ctypes.create_unicode_buffer(64)
     user32.GetWindowTextW(hwnd, title, 64)
     if "Minecraft" not in title.value:
         return False
-    if user32.IsIconic(hwnd):
-        user32.ShowWindow(hwnd, 9)  # SW_RESTORE
-    # 本进程不是前台进程，直接 SetForegroundWindow 会被 Windows 拒绝，
-    # 先按一下 ALT 取得激活权再切
-    user32.keybd_event(0x12, 0, 0, 0)  # VK_MENU 按下
-    user32.SetForegroundWindow(hwnd)
-    user32.keybd_event(0x12, 0, 2, 0)  # KEYEVENTF_KEYUP
+    user32.ShowWindow(hwnd, 4)  # SW_SHOWNOACTIVATE：还原显示但不激活
     return True
 
 
@@ -646,13 +643,13 @@ async def call_tool(name, arguments):
         cmd += list(modules)
         try:
             result = _run_hot_reload(cmd)
-            # 超时多半是游戏后台 tick 暂停导致连接卡死：
-            # 游戏在后台就自动切前台，等 tick 恢复推进后重试一次
-            if result is None and _focus_game_window():
+            # 超时多半是游戏被最小化 tick 暂停导致连接卡死：
+            # 自动还原窗口，等 tick 恢复推进后重试一次
+            if result is None and _restore_game_window():
                 await asyncio.sleep(5)
                 result = _run_hot_reload(cmd)
             if result is None:
-                return _tool_error("hot_reload执行超时（>5s），游戏不在后台或切前台重试仍卡死，请检查游戏窗口状态")
+                return _tool_error("hot_reload执行超时（>5s），还原窗口重试仍卡死，请检查游戏窗口状态")
             _out, _err = result
         except Exception as e:
             return _tool_error("hot_reload执行失败：{}".format(e))

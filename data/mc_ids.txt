@@ -1494,6 +1494,22 @@ snow_brick_stairs	方块	雪砖楼梯
 snow_brick_slab	方块	雪砖台阶
 snow_brick_double_slab	方块	雪砖双层台阶
 snow_brick_wall	方块	雪砖墙
+calcite_stairs	方块	方解石楼梯
+calcite_slab	方块	方解石台阶
+calcite_double_slab	方块	方解石双层台阶
+calcite_wall	方块	方解石墙
+calcite_pillar	方块	方解石柱
+polished_calcite_stairs	方块	磨制方解石楼梯
+polished_calcite_slab	方块	磨制方解石台阶
+polished_calcite_double_slab	方块	磨制方解石双层台阶
+polished_calcite_wall	方块	磨制方解石墙
+polished_calcite	方块	磨制方解石
+polished_calcite_brick_stairs	方块	磨制方解石砖楼梯
+polished_calcite_brick_slab	方块	磨制方解石砖台阶
+polished_calcite_brick_double_slab	方块	磨制方解石砖双层台阶
+polished_calcite_brick_wall	方块	磨制方解石砖墙
+polished_calcite_bricks	方块	磨制方解石砖
+chiseled_soulshale	方块	雕纹灵魂页岩
 golden_apple	物品	金苹果
 enchanted_golden_apple	物品	附魔金苹果
 mushroom_stew	物品	蘑菇煲
@@ -2063,6 +2079,7 @@ music_disc_precipice	物品	音乐唱片Precipice
 music_disc_tears	物品	音乐唱片Tears
 music_disc_lava_chicken	物品	音乐唱片Lava Chicken
 music_disc_bounce	物品	音乐唱片Bounce
+music_disc_flurry	物品	音乐唱片Flurry
 chemistry_table	物品	化学设备
 hard_stained_glass	物品	染色强化玻璃
 hard_stained_glass_pane	物品	染色强化玻璃板
