@@ -1,0 +1,44 @@
+"""MCStudio 启动器：进程不存在时启动并进入主窗口。
+
+用法: py -3 -B launch-mcstudio
+输出 already-running / main-window / timeout，退出码 0=成功 1=超时。
+登录窗标题 "MCStudio"（账号已记住，Enter 登录），主窗口标题 "我的世界编辑器"。
+"""
+import ctypes
+import os
+import sys
+import time
+
+u32 = ctypes.windll.user32
+MCSTUDIO_DIR = r"C:\Program Files (x86)\MCStudio"
+
+
+def find_window(title):
+    return u32.FindWindowW(None, title)
+
+
+def mcstudio_running():
+    return find_window("我的世界编辑器") or find_window("MCStudio") or find_window("MC Studio")
+
+
+def main():
+    if mcstudio_running():
+        print("already-running")
+        return 0
+    os.system("powershell -NoProfile -Command \"Start-Process '%s\\MCStudio.exe' -WorkingDirectory '%s'\"" % (MCSTUDIO_DIR, MCSTUDIO_DIR))
+    import pyautogui
+    pyautogui.FAILSAFE = False
+    deadline = time.time() + 90
+    while time.time() < deadline:
+        if find_window("我的世界编辑器"):
+            print("main-window")
+            return 0
+        if find_window("MCStudio"):
+            pyautogui.press("enter")
+        time.sleep(3)
+    print("timeout")
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

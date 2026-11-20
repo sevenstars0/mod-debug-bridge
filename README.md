@@ -19,6 +19,7 @@ Minecraft（网易基岩版）轻量级 Agent 模组调试工具，分两层：
 | `hot_reload` | 改完代码后热重载（修复了官方 xupdate 不重载模块级常量/数据的 bug） |
 | `listen_event` + `get_event_log` | 监听并获取事件数据用于调试 |
 | `get_api_detail` / `search_api` / `search_identifier` | 查 ModSDK 接口、事件、枚举、基岩版 ID |
+| `restart_world` / `launch_world` / `full_restart` | 开发测试存档闭环：重启当前存档 / 按模组文件路径匹配存档启动 / 彻底重启（保存退出→杀进程→经 MCStudio 重新部署），失败附环境诊断（游戏进程/桥/MCStudio/MCStudio MCP） |
 
 ## 安装
 
@@ -106,7 +107,7 @@ python tools/build_mc_ids.py
 
 ## 详细文档
 
-- AI 工具调用陷阱、调试技巧：见 [`SKILL.md`](SKILL.md)
+- AI 工具调用陷阱、调试技巧、存档启动/重启流程、探针调试：见 [`skills/`](skills/) 下的 ZCode skill（复制到用户 skill 目录即可加载）
 - DebugBridge mod 工作原理、热重载机制：见 [`DebugBridge/DebugBridgeB/DebugBridge/config.py`](DebugBridge/DebugBridgeB/DebugBridge/config.py) 文件头注释和 `dbreload` 函数注释
 
 ## 目录结构
@@ -127,11 +128,12 @@ mod-debug-bridge/
 ├── tools/
 │   ├── debug_bridge_client.py      DebugBridge 客户端（py2/py3 兼容）
 │   ├── hot_reload.py               热重载脚本（py2，被 hot_reload 工具 subprocess 调用）
+│   ├── world_flow.py               存档启动/重启流程（restart_world/launch_world/full_restart 的底层，含 MCStudio MCP 客户端）
 │   ├── build_index.py              重建 data/ 索引（数据源更新时用）
 │   ├── build_mc_ids.py             重建基岩版 ID 映射
 │   └── sync_mcguide.py             从 GitHub 同步官方教程
 ├── README.md                       本文档
-├── SKILL.md                        ZCode skill 配置
+├── skills/                         ZCode skill：游戏内执行代码 / 启动游戏重启验证 / 探针调试工作流 / API索引表
 └── LICENSE
 ```
 

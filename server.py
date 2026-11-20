@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """ModSDK MCP 服务器（极简版）。
 
-八个工具：
+十一个工具：
   - get_api_detail(name)：按名称查接口/事件/枚举值的完整详情
   - search_api(pattern)：正则搜索 API/事件/枚举索引（grep 式）
   - search_identifier(pattern)：正则搜索基岩版方块/物品/实体/状态效果/附魔 ID
@@ -10,10 +10,14 @@
   - get_event_log()：读取 listen_event 回调代码中 print 内容
   - unlisten_event(event_name, side, ...)：取消 listen_event 注册的监听器，不传 event_name 取消该端全部
   - hot_reload(side, pkg, modules)：改完 .py 后热重载，封装 hot_reload.py
+  - restart_world(timeout?)：重启当前存档并等加载完成，失败附四级环境诊断
+  - launch_world(target, timeout?, skin_name?)：按模组文件路径等匹配测试存档，经 MCStudio 部署并启动
+  - full_restart(target?, timeout?, skin_name?)：保存退出→等落盘→杀进程→经 MCStudio 重新部署启动
 
 前三个工具仅依赖 data/ 下的预编译索引；execute_code/listen_event/get_event_log
 依赖 tools/debug_bridge_client.py 连接游戏进程（端口 14530/14531）；
-hot_reload 通过 subprocess 调 py2 脚本（D:/mod-debug-bridge/tools/hot_reload.py）。
+hot_reload 通过 subprocess 调 py2 脚本（D:/mod-debug-bridge/tools/hot_reload.py）；
+后三个工具依赖 tools/world_flow.py（游戏进程控制 + MCStudio MCP 客户端 19131）。
 """
 import asyncio
 import ctypes
@@ -38,6 +42,7 @@ DATA_DIR = BASE_DIR / "data"
 sys.path.insert(0, str(BASE_DIR / "tools"))
 
 import debug_bridge_client as db
+import world_flow
 # 启动时一次性加载预编译索引
 INDEX = json.loads((DATA_DIR / "api_index.json").read_text(encoding="utf-8"))
 LISTINGS = (DATA_DIR / "api_listings.txt").read_text(encoding="utf-8").splitlines()
@@ -208,7 +213,7 @@ async def list_tools():
                     },
                     "pkg": {
                         "type": "string",
-                        "description": "多个mod同时存在时指定包名（可选）",
+                        "description": "多个mod同时存在时指定包名",
                     },
                     "modules": {
                         "type": "array",
@@ -219,11 +224,54 @@ async def list_tools():
                 "required": [],
             },
         ),
+        Tool(
+            name="restart_world",
+            description="重启当前开发测试存档并等玩家进服。改已有JSON内容/重进世界用；新增/删除任何文件须用full_restart。",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "timeout": {"type": "integer", "description": "等待加载完成的超时秒数，默认120"},
+                },
+                "required": [],
+            },
+        ),
+        Tool(
+            name="launch_world",
+            description="启动测试存档并等玩家进服。target支持模组文件路径/项目hash/包名/存档名/game_id，自动匹配测试存档，多个匹配取第一个。需MCStudio已启动且其MCP可用；游戏已在跑时先保存退出当前存档再启动。皮肤陈旧触发反作弊退出时传skin_name（如\"史蒂夫\"）重写配置。",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "target": {"type": "string", "description": "模组文件路径/项目hash/包名/存档名/game_id"},
+                    "timeout": {"type": "integer", "description": "等待加载完成的超时秒数，默认180"},
+                    "skin_name": {"type": "string", "description": "重写存档皮肤配置，如\"史蒂夫\""},
+                },
+                "required": ["target"],
+            },
+        ),
+        Tool(
+            name="full_restart",
+            description="彻底重启：保存退出当前存档→等落盘→杀游戏进程→经MCStudio重新部署文件并启动。新增/删除任何文件（含.py、JSON、贴图等）后必须用。省略target时重进当前存档；游戏未启动时等价launch_world（此时必须传target）。",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "target": {"type": "string", "description": "模组文件路径/项目hash/包名/存档名/game_id，默认当前存档"},
+                    "timeout": {"type": "integer", "description": "等待加载完成的超时秒数，默认180"},
+                    "skin_name": {"type": "string", "description": "重写存档皮肤配置，如\"史蒂夫\""},
+                },
+                "required": [],
+            },
+        ),
     ]
 
 def _tool_error(text):
     """构造 isError=True 的工具错误返回（连接失败/脚本缺失等，区别于代码报错）。"""
     return CallToolResult(content=[TextContent(type="text", text=text)], isError=True)
+
+def _flow_result(status, hint):
+    """restart_world/launch_world/full_restart 共用：ready/timeout 返回正常文本，其余算工具错。"""
+    if status in ("ready", "timeout"):
+        return [TextContent(type="text", text=hint)]
+    return _tool_error(hint)
 
 def _search(arguments, lines):
     """正则搜索 + 可选类型过滤。带 entry_type 时去掉类型列（AI 已知类型）。"""
@@ -658,6 +706,46 @@ async def call_tool(name, arguments):
         if _err:
             text = (text + "\n---stderr---\n" + _err) if text else _err
         return [TextContent(type="text", text=text.strip() or "执行成功，无输出")]
+
+    elif name == "restart_world":
+        timeout = arguments.get("timeout") or 120
+        try:
+            status, hint = world_flow.restart_world(timeout)
+        except Exception as exc:
+            return _tool_error("触发重启失败（{}），游戏未启动或桥不通；游戏未启动时改用launch_world\n{}"
+                               .format(exc, world_flow.diagnose_environment()))
+        return _flow_result(status, hint)
+
+    elif name == "launch_world":
+        target = arguments.get("target", "")
+        timeout = arguments.get("timeout") or 180
+        skin_name = arguments.get("skin_name") or ""
+        game_id, note = world_flow.resolve_target_to_game_id(target)
+        if not game_id:
+            return _tool_error(note + "\n" + world_flow.diagnose_environment())
+        status, hint = world_flow.launch_world(game_id, timeout, skin_name)
+        if note:
+            hint = note + "\n" + hint
+        return _flow_result(status, hint)
+
+    elif name == "full_restart":
+        target = arguments.get("target") or ""
+        timeout = arguments.get("timeout") or 180
+        skin_name = arguments.get("skin_name") or ""
+        level_id, quit_error = world_flow.quit_world_safely()
+        if quit_error:
+            return _tool_error(quit_error + "\n" + world_flow.diagnose_environment())
+        target = target or level_id or ""
+        if not target:
+            return _tool_error("游戏未启动且未指定target，请改用launch_world传模组文件路径/hash/包名启动测试存档\n"
+                               + world_flow.diagnose_environment())
+        game_id, note = world_flow.resolve_target_to_game_id(target)
+        if not game_id:
+            return _tool_error(note + "\n" + world_flow.diagnose_environment())
+        status, hint = world_flow.launch_world(game_id, timeout, skin_name)
+        if note:
+            hint = note + "\n" + hint
+        return _flow_result(status, hint)
 
     return [TextContent(type="text", text="未知工具：{}".format(name))]
 
