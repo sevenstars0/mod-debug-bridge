@@ -36,11 +36,24 @@ BATCH_SIZE = 50
 
 # md 描述中的 HTML 标签（<a href="...">文字</a> 等）
 _HTML_TAG_RE = re.compile(r"</?[a-zA-Z][^>]*>")
+_MD_LINK_RE = re.compile(r'<a href="([^"]+)">([^<]*)</a>')
+
+
+def _link_target(url):
+    """<a> 的 href 转为相对 docs/ 的 md 路径：去掉 ../ 前缀、.html 换 .md，anchor 保留供 grep；外链原样。"""
+    if url.startswith(("http://", "https://")):
+        return url.replace(" ", "%20")
+    url = re.sub(r"^(?:\.\./)+", "", url)
+    url = re.sub(r"\.html(?=#|$)", ".md", url)
+    return url.replace(" ", "%20")
 
 
 def strip_html(text):
-    """去掉描述文本中的 HTML 标签，保留标签内文字。"""
-    return _HTML_TAG_RE.sub("", text) if text else text
+    """<a> 转 markdown 相对链接（[文字](mcguide/....md#anchor)），其余 HTML 标签剔除。"""
+    if not text:
+        return text
+    text = _MD_LINK_RE.sub(lambda m: "[{}]({})".format(m.group(2), _link_target(m.group(1))), text)
+    return _HTML_TAG_RE.sub("", text)
 
 
 # ============================================================
