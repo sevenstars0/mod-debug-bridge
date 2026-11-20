@@ -18,7 +18,6 @@ import os
 import subprocess
 import sys
 import time
-import urllib.error
 import urllib.request
 
 REPO_OWNER = "MCNeteaseDevs"
@@ -64,6 +63,21 @@ def make_opener(use_proxy):
     return urllib.request.build_opener(handler)
 
 
+def fetch_json(opener, url, token, retries=3):
+    """带重试的 GitHub API GET，返回解析后的 JSON。"""
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": "mcguide-sync", "Authorization": "token " + token},
+            )
+            return json.load(opener.open(req, timeout=30))
+        except Exception:
+            if attempt == retries - 1:
+                raise
+            time.sleep(3)
+
+
 # ============================================================
 # 步骤1：获取文件树
 # ============================================================
@@ -71,22 +85,13 @@ def make_opener(use_proxy):
 def get_tree(opener, token):
     """用 git trees API 递归获取完整文件树，返回 tree item 列表。"""
     # 先拿分支最新 commit sha
-    req = urllib.request.Request(
-        "https://api.github.com/repos/{}/{}/commits/{}".format(REPO_OWNER, REPO_NAME, BRANCH),
-        headers={"User-Agent": "mcguide-sync", "Authorization": "token " + token},
-    )
-    resp = opener.open(req, timeout=30)
-    sha = json.load(resp)["sha"]
+    sha = fetch_json(opener, "https://api.github.com/repos/{}/{}/commits/{}".format(
+        REPO_OWNER, REPO_NAME, BRANCH), token)["sha"]
     print("分支 {} 最新 commit: {}".format(BRANCH, sha[:12]))
 
     # 递归获取 tree
-    req = urllib.request.Request(
-        "https://api.github.com/repos/{}/{}/git/trees/{}?recursive=1".format(
-            REPO_OWNER, REPO_NAME, sha),
-        headers={"User-Agent": "mcguide-sync", "Authorization": "token " + token},
-    )
-    resp = opener.open(req, timeout=30)
-    data = json.load(resp)
+    data = fetch_json(opener, "https://api.github.com/repos/{}/{}/git/trees/{}?recursive=1".format(
+        REPO_OWNER, REPO_NAME, sha), token)
     if data.get("truncated"):
         print("警告：文件树被截断，结果可能不完整！")
     return data.get("tree", [])

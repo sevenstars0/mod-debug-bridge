@@ -87,16 +87,16 @@ GetPlayerRoomId	接口	服务端	异步获取uid对应的玩家所在的房间id
 GetBlockEntityData	接口	服务端	用于获取可操作某个自定义方块实体数据的对象，操作方式与dict类似
 GetBlockEntityData	接口	客户端	用于获取客户端当前维度中方块（包括自定义方块）的数据，数据只读不可写，无法获取箱子内的物品信息。
 GetBlockEntityData	接口	服务端	用于获取方块（包括自定义方块）的数据，如需修改，请使用setblockentitydata接口
-GetRot	接口	客户端	获取实体头与水平方向的俯仰角度和竖直方向的旋转角度，获得角度后可用GetDirFromRot接口转换为朝向的单位向量 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
+GetRot	接口	客户端	获取实体头与水平方向的俯仰角度和竖直方向的旋转角度，获得角度后可用GetDirFromRot接口转换为朝向的单位向量 MC坐标系说明
 GetRot	接口	客户端	获取序列帧特效的旋转角度
 GetRot	接口	客户端	获取粒子发射器局部旋转
-GetRot	接口	服务端	获取实体头与水平方向的俯仰角度和竖直方向的旋转角度，获得角度后可用GetDirFromRot接口转换为朝向的单位向量 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
+GetRot	接口	服务端	获取实体头与水平方向的俯仰角度和竖直方向的旋转角度，获得角度后可用GetDirFromRot接口转换为朝向的单位向量 MC坐标系说明
 GetRot	接口	客户端	获取粒子发射器的旋转角度
-SetRot	接口	客户端	设置实体头与水平方向的俯仰角度和竖直方向的旋转角度 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
+SetRot	接口	客户端	设置实体头与水平方向的俯仰角度和竖直方向的旋转角度 MC坐标系说明
 SetRot	接口	客户端	设置序列帧的旋转
 SetRot	接口	客户端	设置粒子发射器局部旋转
-SetRot	接口	服务端	设置实体头与水平方向的俯仰角度和竖直方向的旋转角度 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
-SetRotForClientEntity	接口	客户端	设置客户端实体头与水平方向的俯仰角度和竖直方向的旋转角度 <a href="../../../../mcguide/20-玩法开发/10-基本概念/10-Vector3.html">MC坐标系说明</a>
+SetRot	接口	服务端	设置实体头与水平方向的俯仰角度和竖直方向的旋转角度 MC坐标系说明
+SetRotForClientEntity	接口	客户端	设置客户端实体头与水平方向的俯仰角度和竖直方向的旋转角度 MC坐标系说明
 GetBodyRot	接口	客户端	获取实体的身体的角度
 LockLocalPlayerRot	接口	客户端	在分离摄像机时，锁定本地玩家的头部角度
 SetPlayerLookAtPos	接口	客户端	设置本地玩家看向某个位置
@@ -177,10 +177,10 @@ SetSphericalJointLimitCone	接口	服务端	设置球窝关节的锥形角度限
 SetRevoluteJointLimit	接口	服务端	设置铰链关节的角度限制并启用
 SetPrismaticJointLimit	接口	服务端	设置滑动关节的行程限制并启用
 SetRevoluteJointDrive	接口	服务端	设置铰链关节的电机并启用
-GetBlockStates	接口	服务端	获取<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>
-SetBlockStates	接口	服务端	设置<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>
-GetBlockAuxValueFromStates	接口	服务端	根据方块名称和<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>获取方块附加值AuxValue
-GetBlockStatesFromAuxValue	接口	服务端	根据方块名称和方块附加值AuxValue获取<a href="../../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#方块状态">方块状态</a>
+GetBlockStates	接口	服务端	获取方块状态
+SetBlockStates	接口	服务端	设置方块状态
+GetBlockAuxValueFromStates	接口	服务端	根据方块名称和方块状态获取方块附加值AuxValue
+GetBlockStatesFromAuxValue	接口	服务端	根据方块名称和方块附加值AuxValue获取方块状态
 SetExtraData	接口	服务端	用于设置实体的自定义数据或者世界的自定义数据，数据以键值对的形式保存。设置实体数据时使用对应实体id创建组件，设置世界数据时使用levelId创建组件
 SaveExtraData	接口	服务端	用于保存实体的自定义数据或者世界的自定义数据
 CleanExtraData	接口	服务端	清除实体的自定义数据或者世界的自定义数据，清除实体数据时使用对应实体id创建组件，清除世界数据时使用levelId创建组件
@@ -327,10 +327,10 @@ DestroyComponent	接口	客户端	删除实体的客户端组件
 DestroyComponent	接口	服务端	删除实体的服务端组件
 GetEngineCompFactory	接口	客户端	获取引擎组件的工厂，通过工厂可以创建客户端的引擎组件
 GetEngineCompFactory	接口	服务端	获取引擎组件的工厂，通过工厂可以创建服务端的引擎组件
-RegisterUI	接口	客户端	注册UI，创建UI前，需要先注册UI。同一UI只需要注册一次即可。详见<a href="../../../../mcguide/18-界面与交互/30-UI说明文档.html#界面创建流程及生命周期">界面创建流程及生命周期</a>
-CreateUI	接口	客户端	创建UI，详见<a href="../../../../mcguide/18-界面与交互/30-UI说明文档.html#界面创建流程及生命周期">界面创建流程及生命周期</a>
-GetUI	接口	客户端	获取UI节点，详见<a href="../../../../mcguide/18-界面与交互/30-UI说明文档.html#界面创建流程及生命周期">界面创建流程及生命周期</a>
-GetTopUINode	接口	客户端	获取Push进来的最顶层界面，包括原生界面，详见<a href="../../../../mcguide/18-界面与交互/30-UI说明文档.html#界面创建流程及生命周期" rel="noopenner"> 界面创建流程及生命周期 </a>
+RegisterUI	接口	客户端	注册UI，创建UI前，需要先注册UI。同一UI只需要注册一次即可。详见界面创建流程及生命周期
+CreateUI	接口	客户端	创建UI，详见界面创建流程及生命周期
+GetUI	接口	客户端	获取UI节点，详见界面创建流程及生命周期
+GetTopUINode	接口	客户端	获取Push进来的最顶层界面，包括原生界面，详见 界面创建流程及生命周期 
 CheckCanBindUI	接口	客户端	检查实体是否可以绑定头顶UI，如何将UI与实体绑定详见[CreateUI](#createui)接口
 HideHudGUI	接口	客户端	隐藏HUD游戏界面的游戏原生UI。与原版F1按钮效果一致，只隐藏显示，但点击跳跃键等位置依然会响应
 HidePauseGUI	接口	客户端	隐藏暂停按钮原生UI。
@@ -478,9 +478,9 @@ SetDimensionLocalDoWeatherCycle	接口	服务端	设置某个维度是否开启�
 GetDimensionLocalWeatherInfo	接口	服务端	获取独立维度天气信息(必须先使用SetDimensionUseLocalWeather接口设置此维度拥有自己的独立天气)
 GetNotRenderAtAll	接口	客户端	获取实体是否不渲染
 SetNotRenderAtAll	接口	客户端	设置是否关闭实体渲染
-AddPlayerRenderMaterial	接口	客户端	增加玩家渲染需要的<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_3-自定义材质">材质</a>
-AddPlayerRenderController	接口	客户端	增加玩家<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_7-自定义渲染控制器">渲染控制器</a>
-RemovePlayerRenderController	接口	客户端	删除玩家<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_7-自定义渲染控制器">渲染控制器</a>
+AddPlayerRenderMaterial	接口	客户端	增加玩家渲染需要的材质
+AddPlayerRenderController	接口	客户端	增加玩家渲染控制器
+RemovePlayerRenderController	接口	客户端	删除玩家渲染控制器
 RemovePlayerGeometry	接口	客户端	删除玩家渲染几何体
 AddPlayerGeometry	接口	客户端	增加玩家渲染几何体
 AddPlayerTexture	接口	客户端	增加玩家渲染贴图
@@ -493,14 +493,14 @@ AddAnimationControllerToOneActor	接口	客户端	增加单个生物渲染动画
 RemoveActorAnimationController	接口	客户端	移除生物渲染动画控制器
 RemoveAnimationControllerForOneActor	接口	客户端	移除单个生物渲染动画控制器
 RebuildPlayerRender	接口	客户端	重建玩家的数据渲染器
-AddActorRenderMaterial	接口	客户端	增加生物渲染需要的<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_3-自定义材质">材质</a>
-AddRenderMaterialToOneActor	接口	客户端	增加单个生物渲染需要的<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_3-自定义材质">材质</a>
-CopyActorRenderMaterialFromPlayer	接口	客户端	将渲染<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_3-自定义材质">材质</a>从某个玩家拷贝到某类生物identifier上
-CopyPlayerRenderMaterialToOneActor	接口	客户端	将渲染<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_3-自定义材质">材质</a>从某个玩家拷贝到某个生物上
-AddActorRenderController	接口	客户端	增加生物<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_7-自定义渲染控制器">渲染控制器</a>
-AddRenderControllerToOneActor	接口	客户端	增加单个生物<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_7-自定义渲染控制器">的渲染控制器</a>
-RemoveActorRenderController	接口	客户端	删除生物<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_7-自定义渲染控制器">渲染控制器</a>
-RemoveRenderControllerForOneActor	接口	客户端	删除单个生物<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/3-自定义生物/01-自定义基础生物.html#_7-自定义渲染控制器">的渲染控制器</a>
+AddActorRenderMaterial	接口	客户端	增加生物渲染需要的材质
+AddRenderMaterialToOneActor	接口	客户端	增加单个生物渲染需要的材质
+CopyActorRenderMaterialFromPlayer	接口	客户端	将渲染材质从某个玩家拷贝到某类生物identifier上
+CopyPlayerRenderMaterialToOneActor	接口	客户端	将渲染材质从某个玩家拷贝到某个生物上
+AddActorRenderController	接口	客户端	增加生物渲染控制器
+AddRenderControllerToOneActor	接口	客户端	增加单个生物的渲染控制器
+RemoveActorRenderController	接口	客户端	删除生物渲染控制器
+RemoveRenderControllerForOneActor	接口	客户端	删除单个生物的渲染控制器
 AddActorGeometry	接口	客户端	增加生物渲染几何体
 AddGeometryToOneActor	接口	客户端	增加单个生物渲染几何体
 CopyActorGeometryFromPlayer	接口	客户端	将渲染几何体从某个玩家拷贝到某类生物identifier上
@@ -611,7 +611,7 @@ GetFishingLineMax	接口	服务端	获取服务端当前设置的钓鱼线最大
 GetFishingLineColor	接口	客户端	获取钓鱼线的颜色
 GetFishingLineColor	接口	服务端	获取服务端当前设置的钓鱼线颜色
 GetBlockClip	接口	客户端	获取指定位置方块当前clip的aabb
-GetBlockClip	接口	服务端	获取某一位置方块当前<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/2-自定义方块/1-JSON组件.html#netease-aabb">clip的aabb</a>
+GetBlockClip	接口	服务端	获取某一位置方块当前clip的aabb
 GetBlockCollision	接口	客户端	获取指定位置方块当前collision的aabb
 GetBlockCollision	接口	服务端	获取某一位置方块当前collision的aabb
 GetBlock	接口	客户端	获取某一位置的block
@@ -710,8 +710,8 @@ RemoveComponent	接口	客户端	动态删除某一控件
 SetRemove	接口	客户端	删除本界面节点
 CreateChildControl	接口	客户端	在当前画布中创建子控件，如果该子控件已经存在则返回已存在的子控件
 RemoveChildControl	接口	客户端	移除当前画布中的子控件
-SetUiModel	接口	客户端	设置PaperDoll控件需要显示的模型,PaperDoll控件的配置方式详见<a href="../../../../mcguide/18-界面与交互/30-UI说明文档.html#paperdoll">控件介绍PaperDoll</a>
-SetUiEntity	接口	客户端	设置PaperDoll控件需要显示的生物模型,PaperDoll控件的配置方式详见<a href="../../../../mcguide/18-界面与交互/30-UI说明文档.html#paperdoll">控件介绍PaperDoll</a>
+SetUiModel	接口	客户端	设置PaperDoll控件需要显示的模型,PaperDoll控件的配置方式详见控件介绍PaperDoll
+SetUiEntity	接口	客户端	设置PaperDoll控件需要显示的生物模型,PaperDoll控件的配置方式详见控件介绍PaperDoll
 SetUiModelScale	接口	客户端	设置PaperDoll控件模型的缩放比例
 UpdateScreen	接口	客户端	刷新界面，重新计算各个控件的相关数据
 SetStackGridCount	接口	客户端	设置StackGrid控件的大小
@@ -790,7 +790,7 @@ CancelTimer	接口	客户端	取消定时器
 PlaceStructure	接口	服务端	放置结构
 GetStructureSize	接口	服务端	获取结构体的长宽高
 PlaceFeature	接口	服务端	放置特征，与[/placefeature指令](https://zh.minecraft.wiki/w/%E5%91%BD%E4%BB%A4/placefeature)相似
-PlaceNeteaseLargeFeature	接口	服务端	放置<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/4-自定义维度/6-自定义大型特征.html#自定义大型特征">网易版大型结构特征</a>
+PlaceNeteaseLargeFeature	接口	服务端	放置网易版大型结构特征
 OpenCityProtect	接口	服务端	开启城市保护，包括禁止破坏方块，禁止对方块使用物品，禁止怪物攻击玩家，禁止玩家之间互相攻击，禁止日夜切换，禁止天气变化，禁止怪物群落刷新
 ForbidLiquidFlow	接口	服务端	禁止/允许地图中的流体流动
 AddBlockProtectField	接口	服务端	设置一个方块无法被玩家/实体破坏的区域
@@ -856,7 +856,7 @@ SetBedColor	接口	服务端	设置床（方块）的颜色
 GetSignBlockText	接口	服务端	获取告示牌（方块）的文本内容
 SetSignBlockText	接口	服务端	设置告示牌（方块）的文本内容
 MayPlace	接口	服务端	判断方块是否可以放置
-ListenOnBlockRemoveEvent	接口	服务端	是否监听方块BlockRemoveServerEvent事件，可以动态修改json组件<a href="../../../mcguide/20-玩法开发/15-自定义游戏内容/2-自定义方块/1-JSON组件.html#netease-listen-block-remove">netease:listen_block_remove</a>的值
+ListenOnBlockRemoveEvent	接口	服务端	是否监听方块BlockRemoveServerEvent事件，可以动态修改json组件netease:listen_block_remove的值
 GetLoadBlocks	接口	服务端	获取已经加载的方块id
 SetChestLootTable	接口	服务端	设置箱子战利品表
 SetTime	接口	服务端	设置当前世界时间
@@ -944,8 +944,8 @@ ShowShopGate	接口	客户端	显示网易商城入口
 OpenShopWindow	接口	客户端	打开网易商城窗口。PC端无效（Apollo的PC端请使用商城插件）
 OpenItemDetailWindow	接口	客户端	打开特定商品的详情界面
 CloseShopWindow	接口	客户端	关闭网易商城窗口
-SetUiItem	接口	客户端	设置ItemRenderer控件显示的物品，ItemRenderer控件的配置方式详见<a href="../../../../mcguide/18-界面与交互/30-UI说明文档.html#itemrenderer">控件介绍ItemRenderer</a>
-GetUiItem	接口	客户端	获取ItemRenderer控件显示的物品，ItemRenderer控件的配置方式详见<a href="../../../../mcguide/18-界面与交互/30-UI说明文档.html#itemrenderer">控件介绍ItemRenderer</a>
+SetUiItem	接口	客户端	设置ItemRenderer控件显示的物品，ItemRenderer控件的配置方式详见控件介绍ItemRenderer
+GetUiItem	接口	客户端	获取ItemRenderer控件显示的物品，ItemRenderer控件的配置方式详见控件介绍ItemRenderer
 GetChestBoxSize	接口	服务端	获取箱子容量大小
 SetChestBoxItemNum	接口	服务端	设置箱子槽位物品数目
 SetChestBoxItemExchange	接口	服务端	交换箱子里物品的槽位
@@ -991,8 +991,8 @@ isMoving	接口	客户端	是否在行走
 setMoving	接口	客户端	设置是否行走，只能设置本地玩家（只适用于移动端）
 getUid	接口	客户端	获取本地玩家的uid
 Swing	接口	客户端	本地玩家播放原版攻击动作
-GetPlayerHunger	接口	客户端	获取玩家饥饿度，展示在UI饥饿度进度条上，初始值为20，即每一个鸡腿代表2个饥饿度。 **饱和度(saturation)** ：玩家当前饱和度，初始值为5，最大值始终为玩家当前饥饿度(hunger)，该值直接影响玩家**饥饿度(hunger)**。<br>1）增加方法：吃食物。<br>2）减少方法：每触发一次**消耗事件**，该值减少1，如果该值不大于0，直接把玩家 **饥饿度(hunger)** 减少1。
-GetPlayerHunger	接口	服务端	获取玩家饥饿度，展示在UI饥饿度进度条上，初始值为20，即每一个鸡腿代表2个饥饿度。 **饱和度(saturation)** ：玩家当前饱和度，初始值为5，最大值始终为玩家当前饥饿度(hunger)，该值直接影响玩家**饥饿度(hunger)**。<br>1）增加方法：吃食物。<br>2）减少方法：每触发一次**消耗事件**，该值减少1，如果该值不大于0，直接把玩家 **饥饿度(hunger)** 减少1。
+GetPlayerHunger	接口	客户端	获取玩家饥饿度，展示在UI饥饿度进度条上，初始值为20，即每一个鸡腿代表2个饥饿度。 **饱和度(saturation)** ：玩家当前饱和度，初始值为5，最大值始终为玩家当前饥饿度(hunger)，该值直接影响玩家**饥饿度(hunger)**。1）增加方法：吃食物。2）减少方法：每触发一次**消耗事件**，该值减少1，如果该值不大于0，直接把玩家 **饥饿度(hunger)** 减少1。
+GetPlayerHunger	接口	服务端	获取玩家饥饿度，展示在UI饥饿度进度条上，初始值为20，即每一个鸡腿代表2个饥饿度。 **饱和度(saturation)** ：玩家当前饱和度，初始值为5，最大值始终为玩家当前饥饿度(hunger)，该值直接影响玩家**饥饿度(hunger)**。1）增加方法：吃食物。2）减少方法：每触发一次**消耗事件**，该值减少1，如果该值不大于0，直接把玩家 **饥饿度(hunger)** 减少1。
 GetPlayerDestroyTotalTime	接口	客户端	获取玩家破坏方块需要的时间，受玩家状态（急迫、潮涌、挖掘疲劳）和手持物及手持物附魔（效率）影响
 GetPlayerDestroyTotalTime	接口	服务端	获取玩家破坏方块需要的时间，受玩家状态（急迫、潮涌、挖掘疲劳）和手持物及手持物附魔（效率）影响
 IsOnLadder	接口	客户端	获取玩家是否在梯子/藤蔓上
@@ -1000,8 +1000,8 @@ IsInScaffolding	接口	客户端	获取玩家是否在脚手架中
 GetPlayerIsFishing	接口	客户端	获取玩家是否在钓鱼
 GetPlayerIsFishing	接口	服务端	获取玩家是否在钓鱼
 SetPlayerHunger	接口	服务端	设置玩家饥饿度。
-GetPlayerCurrentExhaustionValue	接口	服务端	获取玩家foodExhaustionLevel的当前消耗度。详见<a href="https://zh.minecraft.wiki/w/%E9%A5%A5%E9%A5%BF#%E6%9C%BA%E5%88%B6">消耗度介绍</a>
-SetPlayerCurrentExhaustionValue	接口	服务端	设置玩家foodExhaustionLevel的当前消耗度。详见<a href="https://zh.minecraft.wiki/w/%E9%A5%A5%E9%A5%BF#%E6%9C%BA%E5%88%B6">消耗度介绍</a>
+GetPlayerCurrentExhaustionValue	接口	服务端	获取玩家foodExhaustionLevel的当前消耗度。详见消耗度介绍
+SetPlayerCurrentExhaustionValue	接口	服务端	设置玩家foodExhaustionLevel的当前消耗度。详见消耗度介绍
 GetPlayerMaxExhaustionValue	接口	服务端	获取玩家foodExhaustionLevel的归零值，常量值，默认为4。**消耗度（exhaustion）**是指玩家当前消耗度水平，初始值为0，该值会随着玩家一系列动作（如跳跃）的影响而增加，当该值大于最大消耗度（maxExhaustion）后归零，并且把饱和度（saturation）减少1（为了说明饥饿度机制，我们将此定义为**消耗事件**）
 SetPlayerMaxExhaustionValue	接口	服务端	设置玩家**最大消耗度(maxExhaustion)**，通过调整 **最大消耗度(maxExhaustion)** 的大小，就可以调整 **饥饿度(hunger)** 的消耗速度，当 **最大消耗度(maxExhaustion)** 很大时，饥饿度可以看似一直不下降
 GetPlayerHealthLevel	接口	服务端	获取玩家健康临界值，当饥饿值大于等于健康临界值时会自动恢复血量，开启饥饿值且开启自然恢复时有效。原版默认值为18
@@ -1108,7 +1108,7 @@ IsStunned	接口	服务端	判断是否处于眩晕状态，截止至网易2.9�
 IsRoaring	接口	服务端	判断是否处于咆哮状态，截止至网易2.9版本，仅对劫掠兽有效
 IsPersistent	接口	服务端	判断是否为持久性生物
 GetLeashHolder	接口	服务端	获取实体被使用拴绳牵引时牵引者的ID
-SetLeashHolder	接口	服务端	为实体添加牵引者，与原版拴绳的作用相同，详见<a href="https://zh.minecraft.wiki/w/%E6%8B%B4%E7%BB%B3">基岩版栓绳介绍</a>
+SetLeashHolder	接口	服务端	为实体添加牵引者，与原版拴绳的作用相同，详见基岩版栓绳介绍
 GetTradeLevel	接口	服务端	获取村民的交易等级
 SetTradeLevel	接口	服务端	设置村民的交易等级
 GetDeathTime	接口	服务端	获取生物死亡后持续的时间（刻，1秒20刻），用于控制死亡动画。0表示生物未死亡。
@@ -1211,9 +1211,9 @@ SetAnim1DMultiControlParam	接口	客户端	新建动画的1D控制参数后，�
 RemoveAnim1DMultiControlParam	接口	客户端	删除用于根据权重控制多动画进行混合的参数
 SetEntityShadowShow	接口	客户端	设置实体打开/关闭影子渲染
 SetModelPartVisible	接口	客户端	对骨骼模型中指定的骨骼进行渲染屏蔽，屏蔽后该骨骼不会被渲染出来。
-SetModelMaterial	接口	客户端	设置骨骼模型所使用的的材质，除了可以设置骨骼模型所使用的<a href="../../../mcguide/16-美术/6-模型和动作/04-骨骼模型的使用.html#7.模型使用自定义材质及更多贴图">自定义材质</a>以外，也可对单个骨骼设置所使用的<a href="../../../mcguide/16-美术/6-模型和动作/04-骨骼模型的使用.html#7.模型使用自定义材质及更多贴图">自定义材质</a>。如果需要设置单个骨骼所使用的材质，需要先在netease_model.json下设置"useSplitMeshes"字段为true。
-SetModelMultiPassMaterial	接口	客户端	设置骨骼模型多pass中使用到的<a href="../../../mcguide/16-美术/6-模型和动作/04-骨骼模型的使用.html#9.骨骼模型自定义多pass">材质列表</a>，也可对单个骨骼设置所使用的自定义多Pass材质。如果需要设置单个骨骼所使用的多Pass材质，需要先在netease_model.json下设置"useSplitMeshes"字段为true。
-GetModelMaterial	接口	客户端	获取骨骼模型的正在使用的材质名称，也可获取骨骼模型中指定骨骼所使用的<a href="../../../mcguide/16-美术/6-模型和动作/04-骨骼模型的使用.html#7.模型使用自定义材质及更多贴图">材质名称</a>。如果获取指定骨骼所使用的材质，需要先在netease_model.json下设置"useSplitMeshes"字段为true。
+SetModelMaterial	接口	客户端	设置骨骼模型所使用的的材质，除了可以设置骨骼模型所使用的自定义材质以外，也可对单个骨骼设置所使用的自定义材质。如果需要设置单个骨骼所使用的材质，需要先在netease_model.json下设置"useSplitMeshes"字段为true。
+SetModelMultiPassMaterial	接口	客户端	设置骨骼模型多pass中使用到的材质列表，也可对单个骨骼设置所使用的自定义多Pass材质。如果需要设置单个骨骼所使用的多Pass材质，需要先在netease_model.json下设置"useSplitMeshes"字段为true。
+GetModelMaterial	接口	客户端	获取骨骼模型的正在使用的材质名称，也可获取骨骼模型中指定骨骼所使用的材质名称。如果获取指定骨骼所使用的材质，需要先在netease_model.json下设置"useSplitMeshes"字段为true。
 SetGravity	接口	服务端	设置实体的重力因子，当生物重力因子为0时则应用世界的重力因子
 GetGravity	接口	服务端	获取实体的重力因子，当生物重力因子为0时则应用世界的重力因子
 SetJumpPower	接口	服务端	设置生物跳跃力度，0.42表示正常水平
@@ -1290,8 +1290,8 @@ GetEntityItem	接口	服务端	获取生物物品，支持获取背包，盔甲�
 SetEntityItem	接口	服务端	设置生物物品，建议开发者根据生物特性来进行设置，部分生物设置装备后可能不显示但是死亡后仍然会掉落所设置的装备
 GetCustomName	接口	服务端	获取物品的自定义名称，与铁砧修改的名称一致
 SetCustomName	接口	服务端	设置物品的自定义名称，与使用铁砧重命名一致
-GetUserDataInEvent	接口	服务端	使物品相关服务端事件的<a href="../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#物品信息字典">物品信息字典</a>参数带有userData。在mod初始化时调用即可
-GetUserDataInEvent	接口	客户端	使物品相关客户端事件的<a href="../../../mcguide/20-玩法开发/10-基本概念/1-我的世界基础概念.html#物品信息字典#物品信息字典">物品信息字典</a>参数带有userData。在mod初始化时调用即可
+GetUserDataInEvent	接口	服务端	使物品相关服务端事件的物品信息字典参数带有userData。在mod初始化时调用即可
+GetUserDataInEvent	接口	客户端	使物品相关客户端事件的物品信息字典参数带有userData。在mod初始化时调用即可
 GetSelectSlotId	接口	服务端	获取玩家当前选中槽位
 GetContainerItem	接口	服务端	获取容器内的物品
 GetEnderChestItem	接口	服务端	获取末影箱内的物品
@@ -1340,7 +1340,7 @@ AddNeteaseFeatureWhiteList	接口	服务端	添加结构对PlaceNeteaseStructure
 RemoveNeteaseFeatureWhiteList	接口	服务端	移除structureName对PlaceNeteaseStructureFeatureEvent事件的脚本层监听
 ClearAllNeteaseFeatureWhiteList	接口	服务端	清空所有已添加Netease Structure Feature对PlaceNeteaseStructureFeatureEvent事件的脚本层监听
 LocateStructureFeature	接口	服务端	与[/locate指令](https://zh.minecraft.wiki/w/%E5%91%BD%E4%BB%A4/locate)相似，用于定位原版的部分结构，如海底神殿、末地城等。
-LocateNeteaseFeatureRule	接口	服务端	与[/locate指令](https://zh.minecraft.wiki/w/%E5%91%BD%E4%BB%A4/locate)相似，用于定位<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/4-自定义维度/4-自定义特征.html#特征规则（feature-rules）">网易自定义特征规则</a>
+LocateNeteaseFeatureRule	接口	服务端	与[/locate指令](https://zh.minecraft.wiki/w/%E5%91%BD%E4%BB%A4/locate)相似，用于定位网易自定义特征规则
 GetSliderValue	接口	客户端	获取滑动条的值，失败返回0
 SetSliderValue	接口	客户端	设置滑动条的值
 Register	接口	客户端	注册实体计算节点
@@ -1369,7 +1369,7 @@ DoTaskOnChunkAsync	接口	服务端	异步加载指定范围区块，加载完�
 OpenClientChunkGeneration	接口	服务端	开启/关闭客户端区块生成功能，需要在LoadServerAddonScriptsAfter事件触发时调用。开启客户端区块生成功能时，如果使用了netease:structure_feature或修改了大部分地图，会导致客户端和服务端地图不一致的问题。此时可以通过关闭客户端区块生成功能解决该问题。
 SetEntityShareablesItems	接口	服务端	设置生物可分享/可拾取的物品列表
 RemoveRecipe	接口	服务端	动态禁用配方
-AddRecipe	接口	服务端	动态注册配方，支持配方类型详见<a href="../../../../mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.html#配方类型说明">[配方类型说明]</a>
+AddRecipe	接口	服务端	动态注册配方，支持配方类型详见[配方类型说明]
 GetRecipeResult	接口	服务端	根据配方id获取配方结果。仅支持合成配方
 GetRecipeByRecipeId	接口	服务端	根据配方id查询配方内容。
 GetRecipeByRecipeId	接口	客户端	根据配方id查询配方内容。
@@ -1696,7 +1696,7 @@ AddPickBlacklist	接口	客户端	添加使用camera组件（例如GetChosen接�
 ClearPickBlacklist	接口	客户端	清除使用camera组件（例如GetChosen接口、PickFacing接口）选取实体的黑名单
 HasEntity	接口	客户端	判断 entity 是否存在
 GetFps	接口	客户端	获取fps
-GetScreenViewInfo	接口	客户端	获取游戏视角信息。首先获得当前分辨率下UI放大倍数，计算方式可参考<a href="../../../mcguide/18-界面与交互/1-界面编辑器使用说明.html#《我的世界》界面适配方法">《我的世界》界面适配方法</a>。则当前游戏视角的宽度的计算方式为：若当前分辨率的宽度能被该放大倍数整除，则等于当前分辨率，若不能，则等于当前分辨率加放大倍数再减去当前分辨率对放大倍数求余的结果，当前游戏视角的高度计算方法类似。例：以分辨率为1792，828的手机计算，画布是分辨率的3倍，所以x = 1792 + 3 - 1 = 1794；y = 828，该接口返回的结果为(1794.0, 828.0, 0.0, 0.0)
+GetScreenViewInfo	接口	客户端	获取游戏视角信息。首先获得当前分辨率下UI放大倍数，计算方式可参考《我的世界》界面适配方法。则当前游戏视角的宽度的计算方式为：若当前分辨率的宽度能被该放大倍数整除，则等于当前分辨率，若不能，则等于当前分辨率加放大倍数再减去当前分辨率对放大倍数求余的结果，当前游戏视角的高度计算方法类似。例：以分辨率为1792，828的手机计算，画布是分辨率的3倍，所以x = 1792 + 3 - 1 = 1794；y = 828，该接口返回的结果为(1794.0, 828.0, 0.0, 0.0)
 SetPopupState	接口	客户端	设置Popup消息栏状态
 SimulateTouchWithMouse	接口	客户端	模拟使用鼠标控制UI（PC F11快捷键）
 GetCurrentDimension	接口	客户端	获取客户端当前维度
@@ -1843,7 +1843,7 @@ NewOnEntityAreaEvent	事件	服务端	触发时机：通过RegisterEntityAOIEven
 OnPlayerHitBlockServerEvent	事件	服务端	触发时机：通过OpenPlayerHitBlockDetection打开方块碰撞检测后，当玩家碰撞到方块时触发该事件。监听玩家着地请使用客户端的OnGroundClientEvent。客户端和服务端分别作碰撞检测，可能两个事件返回的略有差异。
 OnMobHitBlockServerEvent	事件	服务端	触发时机：通过OpenMobHitBlockDetection打开方块碰撞检测后，当生物（不包括玩家）碰撞到方块时触发该事件。
 OnMobHitMobServerEvent	事件	服务端	触发时机：通过OpenPlayerHitMobDetection打开生物碰撞检测后，当生物间（包含玩家）碰撞时触发该事件。注：客户端和服务端分别作碰撞检测，可能两个事件返回的略有差异。
-BlockRandomTickServerEvent	事件	服务端	触发时机：自定义方块配置<a href="../../../mcguide/20-玩法开发/15-自定义游戏内容/2-自定义方块/1-JSON组件.html#netease-random-tick">netease:random_tick</a>随机tick时
+BlockRandomTickServerEvent	事件	服务端	触发时机：自定义方块配置netease:random_tick随机tick时
 BlockNeighborChangedServerEvent	事件	服务端	触发时机：自定义方块周围的方块发生变化时，需要配置netease:neighborchanged_sendto_script，详情请查阅《自定义农作物》文档
 AddEffectServerEvent	事件	服务端	触发时机：实体获得状态效果时
 WillAddEffectServerEvent	事件	服务端	触发时机：实体即将获得状态效果前
@@ -1854,7 +1854,7 @@ PlayerDropItemServerEvent	事件	服务端	触发时机：玩家丢弃物品时�
 DimensionChangeFinishServerEvent	事件	服务端	玩家维度改变完成后服务端抛出
 BlockStrengthChangedServerEvent	事件	服务端	触发时机：自定义机械元件方块红石信号量发生变化时触发
 ActorHurtServerEvent	事件	服务端	触发时机：生物（包括玩家）受伤时触发
-BlockRemoveServerEvent	事件	服务端	触发时机：监听该事件的方块在销毁时触发，可以通过[ListenOnBlockRemoveEvent](#listenonblockremoveevent)方法进行监听，或者通过json组件<a href="../../../mcguide/20-玩法开发/15-自定义游戏内容/2-自定义方块/1-JSON组件.html#netease-listen-block-remove">netease:listen_block_remove</a>进行配置
+BlockRemoveServerEvent	事件	服务端	触发时机：监听该事件的方块在销毁时触发，可以通过[ListenOnBlockRemoveEvent](#listenonblockremoveevent)方法进行监听，或者通过json组件netease:listen_block_remove进行配置
 EntityPlaceBlockAfterServerEvent	事件	服务端	触发时机：当生物成功放置方块后触发
 SpawnProjectileServerEvent	事件	服务端	触发时机：抛射物生成时触发
 EntityDieLoottableServerEvent	事件	服务端	触发时机：生物死亡掉落物品时

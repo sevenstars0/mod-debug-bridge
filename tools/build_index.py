@@ -34,6 +34,14 @@ BRANCH = "main"
 PROXY_URL = "http://127.0.0.1:7890"
 BATCH_SIZE = 50
 
+# md 描述中的 HTML 标签（<a href="...">文字</a> 等）
+_HTML_TAG_RE = re.compile(r"</?[a-zA-Z][^>]*>")
+
+
+def strip_html(text):
+    """去掉描述文本中的 HTML 标签，保留标签内文字。"""
+    return _HTML_TAG_RE.sub("", text) if text else text
+
 
 # ============================================================
 # Markdown 章节解析（移植自 docs_reader._parse_sections）
@@ -210,7 +218,7 @@ def extract_enum_desc(content):
     for line in desc_text.strip().splitlines():
         line = line.strip()
         if line:
-            return line
+            return strip_html(line)
     return ""
 
 
@@ -264,14 +272,21 @@ def load_api_entries(docs_path, documents):
             "type": entry_type,
             "side": method.get("side", ""),
             "category": "/".join(method.get("doc_class_path", [])),
-            "desc": method.get("desc", ""),
-            "params": method.get("param", []),
-            "return": method.get("return", {}),
+            "desc": strip_html(method.get("desc", "")),
+            "params": [{k: strip_html(v) if isinstance(v, str) else v for k, v in p.items()}
+                       for p in method.get("param", [])],
+            "return": {k: strip_html(v) if isinstance(v, str) else v
+                       for k, v in method.get("return", {}).items()},
             "class_path": class_path,
             "notes": None,   # 待回填
             "example": "",   # 待回填
         }
         entries_by_name.setdefault(name, []).append(entry)
+
+    def fill_notes(entry, content):
+        notes, example = parse_notes_and_example(content)
+        entry["notes"] = [strip_html(n) for n in notes]
+        entry["example"] = strip_html(example)
 
     interface_path = docs_path / "interface.json"
     if interface_path.exists():
@@ -314,13 +329,13 @@ def load_api_entries(docs_path, documents):
                         if entry["side"] and entry["side"][:2] in title:
                             target = block
                             break
-                    entry["notes"], entry["example"] = parse_notes_and_example(target)
+                    fill_notes(entry, target)
                     continue
                 if entry["class_path"]:
                     blocks = sub_blocks or [("", sec.content)]
                     for title, block in blocks:
                         if entry["class_path"] in block:
-                            entry["notes"], entry["example"] = parse_notes_and_example(block)
+                            fill_notes(entry, block)
                             break
 
     return entries_by_name
